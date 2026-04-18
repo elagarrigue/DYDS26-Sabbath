@@ -17,7 +17,7 @@ Restructure the monolithic codebase into a clean architecture with presentation,
    - `internal/` for local data sources
 
 3. **Refactor presentation layer** at `edu.dyds.movies/presentation/`:
-   - Root level: keep `Navigation.kt`, `App.kt`
+   - Root level: `Navigation.kt`, `App.kt`
    - `utils/` for shared composables: `CommonComposables.kt` (LoadingIndicator, NoResults)
    - `home/` for `HomeViewModel`, `HomeScreen.kt`
    - `detail/` for `DetailViewModel`, `DetailScreen.kt`
