@@ -2,6 +2,10 @@ package edu.dyds.movies
 
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
+import edu.dyds.data.remote.MovieRemoteDataSource
+import edu.dyds.data.repositories.MovieRepositoryImpl
+import edu.dyds.domain.usecases.GetMovieDetailUseCase as DomainGetMovieDetailUseCase
+import edu.dyds.domain.usecases.GetMoviesUseCase as DomainGetMoviesUseCase
 import edu.dyds.movies.domain.usecase.GetMovieDetailUseCase
 import edu.dyds.movies.domain.usecase.GetMoviesUseCase
 import edu.dyds.movies.presentation.detail.DetailViewModel
@@ -36,8 +40,13 @@ object MoviesDependencyInjector {
             }
         }
 
-    private val getMoviesUseCase = GetMoviesUseCase(tmdbHttpClient)
-    private val getMovieDetailUseCase = GetMovieDetailUseCase(tmdbHttpClient)
+    private val movieRemoteDataSource = MovieRemoteDataSource(tmdbHttpClient)
+    private val movieRepository = MovieRepositoryImpl(movieRemoteDataSource)
+    private val domainGetMoviesUseCase = DomainGetMoviesUseCase(movieRepository)
+    private val domainGetMovieDetailUseCase = DomainGetMovieDetailUseCase(movieRepository)
+
+    private val getMoviesUseCase = GetMoviesUseCase(domainGetMoviesUseCase)
+    private val getMovieDetailUseCase = GetMovieDetailUseCase(domainGetMovieDetailUseCase)
 
     @Composable
     fun getHomeViewModel(): HomeViewModel {
