@@ -1,0 +1,45 @@
+## Plan: Refactor to MVVM with Three-Layer Architecture
+
+Restructure the monolithic codebase into a clean architecture with presentation, domain, and data layers. Move business logic (sorting, filtering) to domain use cases, abstract data fetching behind repositories, and organize presentation into screen-specific packages. A centralized dependency injector will wire all dependencies.
+
+### Steps
+
+1. **Create domain layer package structure** at `edu.dyds.domain`:
+   - `entities/` for `Movie`, `QualifiedMovie` data classes
+   - `usecases/` for `GetMoviesUseCase` (fetch + sort + map to QualifiedMovie) and `GetMovieDetailUseCase`
+   - `repositories/` for `IMovieRepository` interface defining contract
+
+2. **Create data layer package structure** at `edu.dyds.data`:
+   - `repositoriesImpl/` for `MovieRepositoryImpl` (implements `IMovieRepository`)
+   - `external/` for remote data sources:
+     - `MovieRemoteDataSource` (handles TMDB API calls with HttpClient)
+     - `models/` for `RemoteMovie`, `RemoteResult` (API-specific DTOs)
+   - `internal/` for local data sources
+
+3. **Refactor presentation layer** at `edu.dyds.presentation`:
+   - Root level: keep `Navigation.kt`, `App.kt`, `main.kt`
+   - `common/` for shared composables: `CommonComposables.kt` (LoadingIndicator, NoResults)
+   - `home/` for `HomeViewModel`, `HomeScreen.kt`
+   - `detail/` for `DetailViewModel`, `DetailScreen.kt`
+
+4. **Extract ViewModels from screens**:
+   - Split `MoviesViewModel` → `HomeViewModel` (handles movies list) and `DetailViewModel` (handles detail)
+   - Each ViewModel depends on use cases (not HttpClient directly)
+   - Move `MoviesUiState` and `MovieDetailUiState` to respective ViewModels
+
+5. **Build dependency injector** (`MoviesDependencyInjector`):
+   - Create all instances in order: HttpClient → RemoteDataSource → RepositoryImpl → UseCases → ViewModels
+   - Update `@Composable` factory functions to provide correct ViewModel for each screen
+
+6. **Update Navigation.kt** to:
+   - Inject correct ViewModel per screen (HomeViewModel for home, DetailViewModel for detail)
+   - Pass movie ID to DetailViewModel when navigating
+
+### Further Considerations
+
+1. **State Management**: Both ViewModels should expose `StateFlow<UiState>` for their respective screens. Should the detail screen's ID be passed as a constructor parameter or as a method argument to the use case?
+
+2. **Cache Management**: The current `cacheMovies` list in ViewModel can become a responsibility of the repository/data layer, making it transparent to presentation.
+
+3. **Testing Strategy**: With this structure, domain layer (use cases) becomes independently testable without Android dependencies; data layer can be mocked for presentation tests.
+
