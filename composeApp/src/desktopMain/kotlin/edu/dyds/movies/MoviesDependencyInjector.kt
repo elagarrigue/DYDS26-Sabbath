@@ -48,9 +48,4 @@ object MoviesDependencyInjector {
     fun getDetailViewModel(): DetailViewModel {
         return viewModel { DetailViewModel(getMovieDetailUseCase) }
     }
-
-    @Composable
-    fun getMoviesViewModel(): MoviesViewModel {
-        return viewModel { MoviesViewModel(tmdbHttpClient) }
-    }
 }
