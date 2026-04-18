@@ -24,15 +24,15 @@ import dydsproject.composeapp.generated.resources.app_name
 import dydsproject.composeapp.generated.resources.error
 import org.jetbrains.compose.resources.stringResource
 import edu.dyds.movies.Movie
-import edu.dyds.movies.MoviesViewModel
 import edu.dyds.movies.QualifiedMovie
+import edu.dyds.movies.presentation.home.HomeViewModel
 import edu.dyds.movies.presentation.utils.LoadingIndicator
 import edu.dyds.movies.presentation.utils.NoResults
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    viewModel: MoviesViewModel,
+    viewModel: HomeViewModel,
     onGoodMovieClick: (Movie) -> Unit
 ) {
 
@@ -40,7 +40,7 @@ fun HomeScreen(
         viewModel.getAllMovies()
     }
 
-    val state by viewModel.moviesStateFlow.collectAsState(MoviesViewModel.MoviesUiState())
+    val state by viewModel.moviesStateFlow.collectAsState(HomeViewModel.MoviesUiState())
 
     MaterialTheme {
         Surface {
