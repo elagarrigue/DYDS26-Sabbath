@@ -50,7 +50,7 @@ kotlin {
 
 compose.desktop {
     application {
-        mainClass = "edu.dyds.movies.MainKt"
+        mainClass = "edu.dyds.MainKt"
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
@@ -62,7 +62,7 @@ compose.desktop {
 
 tasks.withType<JavaExec>().configureEach {
     if (name == "desktopRun") {
-        mainClass.set("edu.dyds.movies.MainKt")
+        mainClass.set("edu.dyds.MainKt")
     }
 }
 
