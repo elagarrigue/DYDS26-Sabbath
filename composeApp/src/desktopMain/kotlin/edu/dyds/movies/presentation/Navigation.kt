@@ -10,8 +10,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import edu.dyds.movies.MoviesDependencyInjector.getDetailViewModel
-import edu.dyds.movies.MoviesDependencyInjector.getHomeViewModel
+import edu.dyds.di.MoviesDependencyInjector.getDetailViewModel
+import edu.dyds.di.MoviesDependencyInjector.getHomeViewModel
 import edu.dyds.movies.presentation.detail.DetailScreen
 import edu.dyds.movies.presentation.home.HomeScreen
 

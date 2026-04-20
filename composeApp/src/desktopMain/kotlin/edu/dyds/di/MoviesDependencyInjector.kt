@@ -1,4 +1,4 @@
-package edu.dyds.movies
+package edu.dyds.di
 
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -53,3 +53,4 @@ object MoviesDependencyInjector {
         return viewModel { DetailViewModel(getMovieDetailUseCase) }
     }
 }
+
