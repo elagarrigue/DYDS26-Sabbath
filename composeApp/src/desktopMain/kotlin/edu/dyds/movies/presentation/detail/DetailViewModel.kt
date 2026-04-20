@@ -3,7 +3,7 @@ package edu.dyds.movies.presentation.detail
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import edu.dyds.movies.Movie
-import edu.dyds.movies.domain.usecase.GetMovieDetailUseCase
+import edu.dyds.domain.usecases.GetMovieDetailUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -24,7 +24,7 @@ class DetailViewModel(
             movieDetailStateMutableStateFlow.emit(
                 MovieDetailUiState(
                     isLoading = false,
-                    movie = getMovieDetailUseCase.execute(id)
+                    movie = getMovieDetailUseCase(id)
                 )
             )
         }

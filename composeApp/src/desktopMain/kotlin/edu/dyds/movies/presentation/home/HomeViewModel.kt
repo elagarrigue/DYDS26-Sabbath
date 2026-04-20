@@ -3,7 +3,7 @@ package edu.dyds.movies.presentation.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import edu.dyds.movies.QualifiedMovie
-import edu.dyds.movies.domain.usecase.GetMoviesUseCase
+import edu.dyds.domain.usecases.GetMoviesUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -24,7 +24,7 @@ class HomeViewModel(
             moviesStateMutableStateFlow.emit(
                 MoviesUiState(
                     isLoading = false,
-                    movies = getMoviesUseCase.execute()
+                    movies = getMoviesUseCase()
                 )
             )
         }

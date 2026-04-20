@@ -4,8 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import edu.dyds.data.remote.MovieRemoteDataSource
 import edu.dyds.data.repositories.MovieRepositoryImpl
-import edu.dyds.movies.domain.usecase.GetMovieDetailUseCase
-import edu.dyds.movies.domain.usecase.GetMoviesUseCase
+import edu.dyds.domain.usecases.GetMovieDetailUseCase
+import edu.dyds.domain.usecases.GetMoviesUseCase
 import edu.dyds.movies.presentation.detail.DetailViewModel
 import edu.dyds.movies.presentation.home.HomeViewModel
 import io.ktor.client.*
