@@ -2,7 +2,7 @@ package edu.dyds.movies.presentation.detail
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import edu.dyds.movies.Movie
+import edu.dyds.domain.entities.Movie
 import edu.dyds.domain.usecases.GetMovieDetailUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
