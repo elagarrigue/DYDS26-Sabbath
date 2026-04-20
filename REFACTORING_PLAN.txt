@@ -4,30 +4,30 @@ Restructure the monolithic codebase into a clean architecture with presentation,
 
 ### Steps
 
-1. **Create domain layer package structure** at `edu.dyds.movies/domain/`:
+1. **[x] Create domain layer package structure** at `edu.dyds.movies/domain/`:
    - `entity/` for `Movie`, `QualifiedMovie` data classes
    - `usecase/` for `GetMoviesUseCase` (fetch + sort + map to QualifiedMovie) and `GetMovieDetailUseCase`
    - `repository/` for `IMovieRepository` interface defining contract
 
-2. **Create data layer package structure** at `edu.dyds.movies/data/`:
+2. **[x] Create data layer package structure** at `edu.dyds.movies/data/`:
    - `repositoriesImpl/` for `MovieRepositoryImpl` (implements `IMovieRepository`)
    - `external/` for remote data sources:
      - `MovieRemoteDataSource` (handles TMDB API calls with HttpClient)
      - `models/` for `RemoteMovie`, `RemoteResult` (API-specific DTOs)
    - `internal/` for local data sources
 
-3. **Refactor presentation layer** at `edu.dyds.movies/presentation/`:
+3. **[x] Refactor presentation layer** at `edu.dyds.movies/presentation/`:
    - Root level: `Navigation.kt`, `App.kt`
    - `utils/` for shared composables: `CommonComposables.kt` (LoadingIndicator, NoResults)
    - `home/` for `HomeViewModel`, `HomeScreen.kt`
    - `detail/` for `DetailViewModel`, `DetailScreen.kt`
 
-4. **Extract ViewModels from screens**:
+4. **[x] Extract ViewModels from screens**:
    - Split `MoviesViewModel` → `HomeViewModel` (handles movies list) and `DetailViewModel` (handles detail)
    - Each ViewModel depends on use cases (not HttpClient directly)
    - Move `MoviesUiState` and `MovieDetailUiState` to respective ViewModels
 
-5. **Build dependency injector** (`MoviesDependencyInjector`):
+5. **[x] Build dependency injector** (`MoviesDependencyInjector`):
    - Create all instances in order: HttpClient → RemoteDataSource → RepositoryImpl → UseCases → ViewModels
    - Update `@Composable` factory functions to provide correct ViewModel for each screen
 

@@ -1,4 +1,4 @@
-package edu.dyds.movies.domain.usecase
+package edu.dyds.domain.usecases
 
 import edu.dyds.domain.entities.QualifiedMovie
 import edu.dyds.domain.repositories.IMovieRepository
@@ -6,7 +6,7 @@ import edu.dyds.domain.repositories.IMovieRepository
 class GetMoviesUseCase(
     private val movieRepository: IMovieRepository,
 ) {
-    suspend fun execute(): List<QualifiedMovie> {
+    suspend operator fun invoke(): List<QualifiedMovie> {
         return movieRepository
             .getMovies()
             .sortedByDescending { it.popularity }
@@ -18,3 +18,4 @@ class GetMoviesUseCase(
             }
     }
 }
+
