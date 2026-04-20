@@ -1,6 +1,6 @@
 @file:Suppress("FunctionName")
 
-package edu.dyds.movies.presentation
+package edu.dyds.presentation.view
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavGraphBuilder
@@ -10,10 +10,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import edu.dyds.di.MoviesDependencyInjector.getDetailViewModel
-import edu.dyds.di.MoviesDependencyInjector.getHomeViewModel
-import edu.dyds.movies.presentation.detail.DetailScreen
-import edu.dyds.movies.presentation.home.HomeScreen
+import edu.dyds.di.MoviesDependencyInjector.provideDetailViewModel
+import edu.dyds.di.MoviesDependencyInjector.provideHomeViewModel
 
 private const val HOME = "home"
 
@@ -34,7 +32,7 @@ fun Navigation() {
 private fun NavGraphBuilder.homeDestination(navController: NavHostController) {
     composable(HOME) {
         HomeScreen(
-            viewModel = getHomeViewModel(),
+            viewModel = provideHomeViewModel(),
             onGoodMovieClick = {
                 navController.navigate("$DETAIL/${it.id}")
             }
@@ -50,7 +48,8 @@ private fun NavGraphBuilder.detailDestination(navController: NavHostController) 
         val movieId = backstackEntry.arguments?.getInt(MOVIE_ID)
 
         movieId?.let {
-            DetailScreen(getDetailViewModel(), it, onBack = { navController.popBackStack() })
+            DetailScreen(provideDetailViewModel(), it, onBack = { navController.popBackStack() })
         }
     }
 }
+

@@ -1,4 +1,4 @@
-package edu.dyds.movies.presentation.home
+package edu.dyds.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -35,4 +35,6 @@ class HomeViewModel(
         val movies: List<QualifiedMovie> = emptyList(),
     )
 }
+
+
 

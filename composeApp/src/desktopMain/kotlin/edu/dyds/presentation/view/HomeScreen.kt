@@ -1,6 +1,6 @@
 @file:Suppress("FunctionName")
 
-package edu.dyds.movies.presentation.home
+package edu.dyds.presentation.view
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -25,13 +25,11 @@ import dydsproject.composeapp.generated.resources.error
 import org.jetbrains.compose.resources.stringResource
 import edu.dyds.domain.entities.Movie
 import edu.dyds.domain.entities.QualifiedMovie
-import edu.dyds.movies.presentation.utils.LoadingIndicator
-import edu.dyds.movies.presentation.utils.NoResults
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    viewModel: HomeViewModel,
+    viewModel: edu.dyds.presentation.viewmodel.HomeViewModel,
     onGoodMovieClick: (Movie) -> Unit
 ) {
 
@@ -39,7 +37,7 @@ fun HomeScreen(
         viewModel.getAllMovies()
     }
 
-    val state by viewModel.moviesStateFlow.collectAsState(HomeViewModel.MoviesUiState())
+    val state by viewModel.moviesStateFlow.collectAsState(edu.dyds.presentation.viewmodel.HomeViewModel.MoviesUiState())
 
     MaterialTheme {
         Surface {
@@ -150,3 +148,5 @@ private fun BadMovieItem(movie: Movie) {
         )
     }
 }
+
+

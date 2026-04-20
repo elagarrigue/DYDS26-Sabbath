@@ -1,6 +1,6 @@
 @file:Suppress("FunctionName")
 
-package edu.dyds.movies.presentation.utils
+package edu.dyds.presentation.view
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
@@ -45,3 +45,4 @@ fun NoResults(
         }
     }
 }
+

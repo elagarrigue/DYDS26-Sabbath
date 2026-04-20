@@ -1,4 +1,4 @@
-package edu.dyds.movies.presentation.detail
+package edu.dyds.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -35,4 +35,6 @@ class DetailViewModel(
         val movie: Movie? = null,
     )
 }
+
+
 
