@@ -76,10 +76,10 @@ private fun MovieGrid(
         verticalArrangement = Arrangement.spacedBy(4.dp),
         modifier = Modifier.padding(padding)
     ) {
-        items(movies, key = { it.movie.id }) { qualifiedMovie ->
+        items(movies, key = { it.id }) { qualifiedMovie ->
             when (qualifiedMovie.isGoodMovie) {
-                true -> GoodMovieItem(qualifiedMovie.movie) { onMovieClick(qualifiedMovie.movie) }
-                false -> BadMovieItem(qualifiedMovie.movie)
+                true -> GoodMovieItem(qualifiedMovie) { onMovieClick(qualifiedMovie) }
+                false -> BadMovieItem(qualifiedMovie)
             }
         }
     }

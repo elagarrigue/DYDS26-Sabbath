@@ -1,21 +1,16 @@
 package edu.dyds.domain.entities
 
-data class Movie(
-	val id: Int,
-	val title: String,
-	val poster: String,
-	val backdrop: String? = null,
-	val overview: String = "",
-	val originalLanguage: String = "",
-	val originalTitle: String = "",
-	val popularity: Double = 0.0,
-	val releaseDate: String = "",
-	val voteAverage: Double = 0.0,
-)
-
-data class QualifiedMovie(
-	val movie: Movie,
-	val isGoodMovie: Boolean,
+open class Movie(
+	open val id: Int,
+	open val title: String,
+	open val poster: String,
+	open val backdrop: String? = null,
+	open val overview: String = "",
+	open val originalLanguage: String = "",
+	open val originalTitle: String = "",
+	open val popularity: Double = 0.0,
+	open val releaseDate: String = "",
+	open val voteAverage: Double = 0.0,
 )
 
 
