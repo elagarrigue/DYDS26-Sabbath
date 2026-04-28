@@ -1,4 +1,4 @@
-package edu.dyds.data.repositories
+package edu.dyds.data.repositoriesImpl
 
 import edu.dyds.data.remote.MovieRemoteDataSource
 import edu.dyds.data.remote.toDomainMovie
@@ -18,3 +18,4 @@ class MovieRepositoryImpl(
         return movieRemoteDataSource.getMovieDetail(id)?.toDomainMovie()
     }
 }
+
