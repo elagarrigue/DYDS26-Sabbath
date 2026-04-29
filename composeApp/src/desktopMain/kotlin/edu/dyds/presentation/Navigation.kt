@@ -1,7 +1,9 @@
 @file:Suppress("FunctionName")
 
-package edu.dyds.presentation.view
+package edu.dyds.presentation
 
+import edu.dyds.presentation.home.HomeScreen
+import edu.dyds.presentation.detail.DetailScreen
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -52,4 +54,5 @@ private fun NavGraphBuilder.detailDestination(navController: NavHostController) 
         }
     }
 }
+
 

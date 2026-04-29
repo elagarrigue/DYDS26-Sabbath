@@ -44,12 +44,12 @@ object MoviesDependencyInjector {
     private val getMovieDetailUseCase: GetMovieDetailUseCase = GetMovieDetailUseCaseImpl(movieRepository)
 
     @Composable
-    fun provideHomeViewModel(): edu.dyds.presentation.viewmodel.HomeViewModel {
-        return viewModel { edu.dyds.presentation.viewmodel.HomeViewModel(getMoviesUseCase) }
+    fun provideHomeViewModel(): edu.dyds.presentation.home.HomeViewModel {
+        return viewModel { edu.dyds.presentation.home.HomeViewModel(getMoviesUseCase) }
     }
 
     @Composable
-    fun provideDetailViewModel(): edu.dyds.presentation.viewmodel.DetailViewModel {
-        return viewModel { edu.dyds.presentation.viewmodel.DetailViewModel(getMovieDetailUseCase) }
+    fun provideDetailViewModel(): edu.dyds.presentation.detail.DetailViewModel {
+        return viewModel { edu.dyds.presentation.detail.DetailViewModel(getMovieDetailUseCase) }
     }
 }

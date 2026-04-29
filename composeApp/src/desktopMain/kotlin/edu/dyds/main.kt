@@ -2,7 +2,7 @@ package edu.dyds
 
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import edu.dyds.presentation.view.App
+import edu.dyds.presentation.App
 
 fun main() = application {
     Window(
