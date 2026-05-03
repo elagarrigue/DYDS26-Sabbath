@@ -11,35 +11,33 @@ class MovieRepositoryImpl(
     private val movieLocalDataSource: MovieLocalDataSource,
 ) : MovieRepository {
     override suspend fun getMovies(): List<Movie> {
-        // Cache-first: try local cache
         val cached = movieLocalDataSource.getCachedMovies()
         if (cached.isNotEmpty()) {
-            return cached.map { it.toDomainMovie() }
+            return cached
         }
 
-        // Fallback to remote and store in local cache
         val remote = movieRemoteDataSource.getPopularMovies()
-        movieLocalDataSource.saveMovies(remote)
-        return remote.map { it.toDomainMovie() }
+        val domainMovies = remote.map { it.toDomainMovie() }
+        movieLocalDataSource.saveMovies(domainMovies)
+        return domainMovies
     }
 
     override suspend fun getMovieDetail(id: Int): Movie? {
-        // Try local cache first
         movieLocalDataSource.getCachedMovieDetail(id)?.let {
-            return it.toDomainMovie()
+            return it
         }
 
-        // Fetch remote, then add to cache if present
         val remoteDetail = movieRemoteDataSource.getMovieDetail(id)
         if (remoteDetail != null) {
-            // merge into cache: get current list and add/replace the item
+            val domainDetail = remoteDetail.toDomainMovie()
             val current = movieLocalDataSource.getCachedMovies().toMutableList()
-            val index = current.indexOfFirst { it.id == remoteDetail.id }
-            if (index >= 0) current[index] = remoteDetail else current.add(remoteDetail)
+            val index = current.indexOfFirst { it.id == domainDetail.id }
+            if (index >= 0) current[index] = domainDetail else current.add(domainDetail)
             movieLocalDataSource.saveMovies(current)
+            return domainDetail
         }
 
-        return remoteDetail?.toDomainMovie()
+        return null
     }
 }
 
