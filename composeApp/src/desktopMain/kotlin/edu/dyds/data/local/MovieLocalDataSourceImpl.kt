@@ -20,10 +20,6 @@ class MovieLocalDataSourceImpl : MovieLocalDataSource {
     override suspend fun getCachedMovieDetail(id: Int): Movie? = synchronized(lock) {
         cache.find { it.id == id }
     }
-
-    override suspend fun clear() = synchronized(lock) {
-        cache.clear()
-    }
 }
 
 
