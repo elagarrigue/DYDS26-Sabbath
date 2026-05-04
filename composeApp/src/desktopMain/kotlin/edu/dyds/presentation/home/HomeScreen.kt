@@ -1,6 +1,6 @@
 @file:Suppress("FunctionName")
 
-package edu.dyds.movies
+package edu.dyds.presentation.home
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -23,11 +23,15 @@ import dydsproject.composeapp.generated.resources.Res
 import dydsproject.composeapp.generated.resources.app_name
 import dydsproject.composeapp.generated.resources.error
 import org.jetbrains.compose.resources.stringResource
+import edu.dyds.domain.entities.Movie
+import edu.dyds.domain.entities.QualifiedMovie
+import edu.dyds.presentation.utils.LoadingIndicator
+import edu.dyds.presentation.utils.NoResults
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    viewModel: MoviesViewModel,
+    viewModel: HomeViewModel,
     onGoodMovieClick: (Movie) -> Unit
 ) {
 
@@ -35,7 +39,7 @@ fun HomeScreen(
         viewModel.getAllMovies()
     }
 
-    val state by viewModel.moviesStateFlow.collectAsState(MoviesViewModel.MoviesUiState())
+    val state by viewModel.moviesStateFlow.collectAsState(HomeViewModel.MoviesUiState())
 
     MaterialTheme {
         Surface {
@@ -74,10 +78,10 @@ private fun MovieGrid(
         verticalArrangement = Arrangement.spacedBy(4.dp),
         modifier = Modifier.padding(padding)
     ) {
-        items(movies, key = { it.movie.id }) { qualifiedMovie ->
+        items(movies, key = { it.id }) { qualifiedMovie ->
             when (qualifiedMovie.isGoodMovie) {
-                true -> GoodMovieItem(qualifiedMovie.movie) { onMovieClick(qualifiedMovie.movie) }
-                false -> BadMovieItem(qualifiedMovie.movie)
+                true -> GoodMovieItem(qualifiedMovie) { onMovieClick(qualifiedMovie) }
+                false -> BadMovieItem(qualifiedMovie)
             }
         }
     }
@@ -146,3 +150,6 @@ private fun BadMovieItem(movie: Movie) {
         )
     }
 }
+
+
+

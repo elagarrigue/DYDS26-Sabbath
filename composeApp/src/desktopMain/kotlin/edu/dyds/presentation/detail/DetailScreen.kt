@@ -1,6 +1,6 @@
 @file:Suppress("FunctionName")
 
-package edu.dyds.movies
+package edu.dyds.presentation.detail
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -25,12 +25,16 @@ import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import dydsproject.composeapp.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
+import edu.dyds.domain.entities.Movie
+import edu.dyds.presentation.detail.DetailViewModel.*
+import edu.dyds.presentation.utils.LoadingIndicator
+import edu.dyds.presentation.utils.NoResults
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DetailScreen(viewModel: MoviesViewModel, id: Int, onBack: () -> Unit) {
+fun DetailScreen(viewModel: DetailViewModel, id: Int, onBack: () -> Unit) {
 
-    val state by viewModel.movieDetailStateFlow.collectAsState(MoviesViewModel.MovieDetailUiState())
+    val state by viewModel.movieDetailStateFlow.collectAsState(MovieDetailUiState())
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
@@ -135,3 +139,6 @@ private fun DetailTopBar(
         scrollBehavior = scrollBehavior
     )
 }
+
+
+
