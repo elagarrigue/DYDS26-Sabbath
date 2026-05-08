@@ -12,6 +12,7 @@ import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import kotlin.test.Test
+import kotlin.test.BeforeTest
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
@@ -23,12 +24,21 @@ class DetailViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
+    private lateinit var useCase: GetMovieDetailUseCase
+    private lateinit var viewModel: DetailViewModel
+
+    @BeforeTest
+    fun setUp() {
+        useCase = FakeGetMovieDetailUseCase(null)
+        viewModel = DetailViewModel(useCase)
+    }
+
     @Test
     fun `getMovieDetail emits initial loading and final populated state`() = runTest {
         val expectedMovie = movie(id = 7)
         val resultGate = CompletableDeferred<Movie?>()
-        val useCase = SuspendedGetMovieDetailUseCase(resultGate)
-        val viewModel = DetailViewModel(useCase)
+        useCase = SuspendedGetMovieDetailUseCase(resultGate)
+        viewModel = DetailViewModel(useCase)
         val initialState = viewModel.movieDetailStateFlow.first()
 
         assertFalse(initialState.isLoading)
@@ -39,8 +49,8 @@ class DetailViewModelTest {
 
         val loadingState = viewModel.movieDetailStateFlow.first()
 
-        assertEquals(1, useCase.invocationCount)
-        assertEquals(7, useCase.requestedId)
+        assertEquals(1, (useCase as SuspendedGetMovieDetailUseCase).invocationCount)
+        assertEquals(7, (useCase as SuspendedGetMovieDetailUseCase).requestedId)
         assertTrue(loadingState.isLoading)
         assertNull(loadingState.movie)
 
@@ -55,16 +65,16 @@ class DetailViewModelTest {
 
     @Test
     fun `getMovieDetail emits final null movie when use case returns null`() = runTest {
-        val useCase = FakeGetMovieDetailUseCase(null)
-        val viewModel = DetailViewModel(useCase)
+        useCase = FakeGetMovieDetailUseCase(null)
+        viewModel = DetailViewModel(useCase)
 
         viewModel.getMovieDetail(42)
         advanceUntilIdle()
 
         val finalState = viewModel.movieDetailStateFlow.first()
 
-        assertEquals(1, useCase.invocationCount)
-        assertEquals(42, useCase.requestedId)
+        assertEquals(1, (useCase as FakeGetMovieDetailUseCase).invocationCount)
+        assertEquals(42, (useCase as FakeGetMovieDetailUseCase).requestedId)
         assertFalse(finalState.isLoading)
         assertNull(finalState.movie)
     }
@@ -97,6 +107,7 @@ class DetailViewModelTest {
         }
     }
 
+    @Suppress("UNUSED_PARAMETER")
     private fun movie(id: Int) = Movie(
         id = id,
         title = "Movie $id",

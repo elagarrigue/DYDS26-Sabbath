@@ -13,6 +13,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.runCurrent
 import org.junit.Rule
 import kotlin.test.Test
+import kotlin.test.BeforeTest
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -23,6 +24,15 @@ class HomeViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
+    private lateinit var useCase: GetMoviesUseCase
+    private lateinit var viewModel: HomeViewModel
+
+    @BeforeTest
+    fun setUp() {
+        useCase = FakeGetMoviesUseCase(emptyList())
+        viewModel = HomeViewModel(useCase)
+    }
+
     @Test
     fun `getAllMovies emits initial loading and final populated state`() = runTest {
         val expectedMovies = listOf(
@@ -30,8 +40,8 @@ class HomeViewModelTest {
             qualifiedMovie(id = 2, isGoodMovie = false),
         )
         val resultGate = CompletableDeferred<List<QualifiedMovie>>()
-        val useCase = SuspendedGetMoviesUseCase(resultGate)
-        val viewModel = HomeViewModel(useCase)
+        useCase = SuspendedGetMoviesUseCase(resultGate)
+        viewModel = HomeViewModel(useCase)
         val initialState = viewModel.moviesStateFlow.first()
 
         assertFalse(initialState.isLoading)
@@ -42,7 +52,7 @@ class HomeViewModelTest {
 
         val loadingState = viewModel.moviesStateFlow.first()
 
-        assertEquals(1, useCase.invocationCount)
+        assertEquals(1, (useCase as SuspendedGetMoviesUseCase).invocationCount)
         assertTrue(loadingState.isLoading)
         assertTrue(loadingState.movies.isEmpty())
 
@@ -57,21 +67,21 @@ class HomeViewModelTest {
 
     @Test
     fun `getAllMovies emits final empty state when use case returns no movies`() = runTest {
-        val useCase = FakeGetMoviesUseCase(emptyList())
-        val viewModel = HomeViewModel(useCase)
+        useCase = FakeGetMoviesUseCase(emptyList())
+        viewModel = HomeViewModel(useCase)
 
         viewModel.getAllMovies()
         advanceUntilIdle()
 
         val finalState = viewModel.moviesStateFlow.first()
 
-        assertEquals(1, useCase.invocationCount)
+        assertEquals(1, (useCase as FakeGetMoviesUseCase).invocationCount)
         assertFalse(finalState.isLoading)
         assertTrue(finalState.movies.isEmpty())
     }
 
     private class FakeGetMoviesUseCase(
-        private val result: List<QualifiedMovie>,
+        private val result: List<QualifiedMovie> = emptyList(),
     ) : GetMoviesUseCase {
 
         var invocationCount: Int = 0
