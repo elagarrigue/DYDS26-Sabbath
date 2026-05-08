@@ -4,16 +4,26 @@ import edu.dyds.domain.entities.Movie
 import edu.dyds.domain.repositories.MovieRepository
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
+import kotlin.test.BeforeTest
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertSame
 
 class GetMovieDetailUseCaseImplTest {
 
+    private lateinit var repository: FakeMovieRepository
+    private lateinit var useCase: GetMovieDetailUseCaseImpl
+
+    @BeforeTest
+    fun setUp() {
+        repository = FakeMovieRepository()
+        useCase = GetMovieDetailUseCaseImpl(repository)
+    }
+
     @Test
     fun `invoke delegates requested id to repository`() = runTest {
-        val repository = FakeMovieRepository(movieDetail = movie(id = 8))
-        val useCase = GetMovieDetailUseCaseImpl(repository)
+        repository = FakeMovieRepository(movieDetail = movie(id = 8))
+        useCase = GetMovieDetailUseCaseImpl(repository)
 
         useCase(8)
 
@@ -23,8 +33,8 @@ class GetMovieDetailUseCaseImplTest {
     @Test
     fun `invoke returns movie provided by repository`() = runTest {
         val expectedMovie = movie(id = 3)
-        val repository = FakeMovieRepository(movieDetail = expectedMovie)
-        val useCase = GetMovieDetailUseCaseImpl(repository)
+        repository = FakeMovieRepository(movieDetail = expectedMovie)
+        useCase = GetMovieDetailUseCaseImpl(repository)
 
         val result = useCase(3)
 
@@ -33,8 +43,8 @@ class GetMovieDetailUseCaseImplTest {
 
     @Test
     fun `invoke returns null when repository has no detail`() = runTest {
-        val repository = FakeMovieRepository(movieDetail = null)
-        val useCase = GetMovieDetailUseCaseImpl(repository)
+        repository = FakeMovieRepository(movieDetail = null)
+        useCase = GetMovieDetailUseCaseImpl(repository)
 
         val result = useCase(42)
 
@@ -42,7 +52,7 @@ class GetMovieDetailUseCaseImplTest {
     }
 
     private class FakeMovieRepository(
-        private val movieDetail: Movie?,
+        private val movieDetail: Movie? = null,
     ) : MovieRepository {
 
         var requestedId: Int? = null

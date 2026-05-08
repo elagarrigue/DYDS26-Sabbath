@@ -4,22 +4,32 @@ import edu.dyds.domain.entities.Movie
 import edu.dyds.domain.repositories.MovieRepository
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
+import kotlin.test.BeforeTest
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class GetMoviesUseCaseImplTest {
 
+    private lateinit var repository: FakeMovieRepository
+    private lateinit var useCase: GetMoviesUseCaseImpl
+
+    @BeforeTest
+    fun setUp() {
+        repository = FakeMovieRepository()
+        useCase = GetMoviesUseCaseImpl(repository)
+    }
+
     @Test
     fun `invoke returns movies sorted by popularity descending`() = runTest {
-        val repository = FakeMovieRepository(
+        repository = FakeMovieRepository(
             movies = listOf(
                 movie(id = 1, popularity = 10.0, voteAverage = 6.0),
                 movie(id = 2, popularity = 50.0, voteAverage = 7.0),
                 movie(id = 3, popularity = 30.0, voteAverage = 8.0),
             )
         )
-        val useCase = GetMoviesUseCaseImpl(repository)
+        useCase = GetMoviesUseCaseImpl(repository)
 
         val result = useCase()
 
@@ -28,10 +38,10 @@ class GetMoviesUseCaseImplTest {
 
     @Test
     fun `invoke marks movie as good when vote average is greater than seven`() = runTest {
-        val repository = FakeMovieRepository(
+        repository = FakeMovieRepository(
             movies = listOf(movie(id = 1, popularity = 10.0, voteAverage = 8.5))
         )
-        val useCase = GetMoviesUseCaseImpl(repository)
+        useCase = GetMoviesUseCaseImpl(repository)
 
         val result = useCase()
 
@@ -40,10 +50,10 @@ class GetMoviesUseCaseImplTest {
 
     @Test
     fun `invoke marks movie as good when vote average is exactly seven`() = runTest {
-        val repository = FakeMovieRepository(
+        repository = FakeMovieRepository(
             movies = listOf(movie(id = 1, popularity = 10.0, voteAverage = 7.0))
         )
-        val useCase = GetMoviesUseCaseImpl(repository)
+        useCase = GetMoviesUseCaseImpl(repository)
 
         val result = useCase()
 
@@ -52,10 +62,10 @@ class GetMoviesUseCaseImplTest {
 
     @Test
     fun `invoke marks movie as not good when vote average is lower than seven`() = runTest {
-        val repository = FakeMovieRepository(
+        repository = FakeMovieRepository(
             movies = listOf(movie(id = 1, popularity = 10.0, voteAverage = 6.9))
         )
-        val useCase = GetMoviesUseCaseImpl(repository)
+        useCase = GetMoviesUseCaseImpl(repository)
 
         val result = useCase()
 
@@ -64,8 +74,8 @@ class GetMoviesUseCaseImplTest {
 
     @Test
     fun `invoke returns empty list when repository has no movies`() = runTest {
-        val repository = FakeMovieRepository(movies = emptyList())
-        val useCase = GetMoviesUseCaseImpl(repository)
+        repository = FakeMovieRepository(movies = emptyList())
+        useCase = GetMoviesUseCaseImpl(repository)
 
         val result = useCase()
 
@@ -73,7 +83,7 @@ class GetMoviesUseCaseImplTest {
     }
 
     private class FakeMovieRepository(
-        private val movies: List<Movie>,
+        private val movies: List<Movie> = emptyList(),
     ) : MovieRepository {
 
         override suspend fun getMovies(): List<Movie> = movies
