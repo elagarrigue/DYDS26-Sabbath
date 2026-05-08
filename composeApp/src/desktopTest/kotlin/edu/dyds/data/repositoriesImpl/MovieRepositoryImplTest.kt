@@ -6,17 +6,29 @@ import edu.dyds.data.remote.RemoteMovie
 import edu.dyds.domain.entities.Movie
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
+import kotlin.test.BeforeTest
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 class MovieRepositoryImplTest {
 
+    private lateinit var remoteDataSource: FakeMovieRemoteDataSource
+    private lateinit var localDataSource: FakeMovieLocalDataSource
+    private lateinit var repository: MovieRepositoryImpl
+
+    @BeforeTest
+    fun setUp() {
+        remoteDataSource = FakeMovieRemoteDataSource()
+        localDataSource = FakeMovieLocalDataSource()
+        repository = MovieRepositoryImpl(remoteDataSource, localDataSource)
+    }
+
     @Test
     fun `getMovies returns cached movies when local data source is not empty`() = runTest {
         val cachedMovies = listOf(movie(id = 1), movie(id = 2))
-        val remoteDataSource = FakeMovieRemoteDataSource(popularMovies = listOf(remoteMovie(id = 99)))
-        val localDataSource = FakeMovieLocalDataSource(cachedMovies = cachedMovies)
-        val repository = MovieRepositoryImpl(remoteDataSource, localDataSource)
+        remoteDataSource = FakeMovieRemoteDataSource(popularMovies = listOf(remoteMovie(id = 99)))
+        localDataSource = FakeMovieLocalDataSource(cachedMovies = cachedMovies)
+        repository = MovieRepositoryImpl(remoteDataSource, localDataSource)
 
         val result = repository.getMovies()
 
@@ -27,7 +39,7 @@ class MovieRepositoryImplTest {
 
     @Test
     fun `getMovies fetches remote movies maps them and stores them when cache is empty`() = runTest {
-        val remoteDataSource = FakeMovieRemoteDataSource(
+        remoteDataSource = FakeMovieRemoteDataSource(
             popularMovies = listOf(
                 remoteMovie(
                     id = 1,
@@ -43,8 +55,8 @@ class MovieRepositoryImplTest {
                 )
             )
         )
-        val localDataSource = FakeMovieLocalDataSource()
-        val repository = MovieRepositoryImpl(remoteDataSource, localDataSource)
+        localDataSource = FakeMovieLocalDataSource()
+        repository = MovieRepositoryImpl(remoteDataSource, localDataSource)
 
         val result = repository.getMovies()
 
@@ -67,9 +79,9 @@ class MovieRepositoryImplTest {
     @Test
     fun `getMovieDetail returns cached detail when local data source has it`() = runTest {
         val cachedMovie = movie(id = 7)
-        val remoteDataSource = FakeMovieRemoteDataSource(movieDetail = remoteMovie(id = 99))
-        val localDataSource = FakeMovieLocalDataSource(cachedMovies = listOf(cachedMovie))
-        val repository = MovieRepositoryImpl(remoteDataSource, localDataSource)
+        remoteDataSource = FakeMovieRemoteDataSource(movieDetail = remoteMovie(id = 99))
+        localDataSource = FakeMovieLocalDataSource(cachedMovies = listOf(cachedMovie))
+        repository = MovieRepositoryImpl(remoteDataSource, localDataSource)
 
         val result = repository.getMovieDetail(7)
 
@@ -80,7 +92,7 @@ class MovieRepositoryImplTest {
 
     @Test
     fun `getMovieDetail fetches remote detail keeps existing cache and returns mapped movie`() = runTest {
-        val remoteDataSource = FakeMovieRemoteDataSource(
+        remoteDataSource = FakeMovieRemoteDataSource(
             movieDetail = remoteMovie(
                 id = 7,
                 title = "Movie 7",
@@ -94,8 +106,8 @@ class MovieRepositoryImplTest {
                 voteAverage = 7.7,
             )
         )
-        val localDataSource = FakeMovieLocalDataSource(cachedMovies = listOf(movie(id = 8)))
-        val repository = MovieRepositoryImpl(remoteDataSource, localDataSource)
+        localDataSource = FakeMovieLocalDataSource(cachedMovies = listOf(movie(id = 8)))
+        repository = MovieRepositoryImpl(remoteDataSource, localDataSource)
 
         val result = repository.getMovieDetail(7)
 
@@ -118,11 +130,11 @@ class MovieRepositoryImplTest {
 
     @Test
     fun `getMovieDetail adds remote detail to cache when movie was not cached`() = runTest {
-        val remoteDataSource = FakeMovieRemoteDataSource(
+        remoteDataSource = FakeMovieRemoteDataSource(
             movieDetail = remoteMovie(id = 5, title = "Movie 5")
         )
-        val localDataSource = FakeMovieLocalDataSource(cachedMovies = listOf(movie(id = 1)))
-        val repository = MovieRepositoryImpl(remoteDataSource, localDataSource)
+        localDataSource = FakeMovieLocalDataSource(cachedMovies = listOf(movie(id = 1)))
+        repository = MovieRepositoryImpl(remoteDataSource, localDataSource)
 
         val result = repository.getMovieDetail(5)
 
@@ -134,9 +146,9 @@ class MovieRepositoryImplTest {
 
     @Test
     fun `getMovieDetail returns null when remote data source has no detail`() = runTest {
-        val remoteDataSource = FakeMovieRemoteDataSource(movieDetail = null)
-        val localDataSource = FakeMovieLocalDataSource()
-        val repository = MovieRepositoryImpl(remoteDataSource, localDataSource)
+        remoteDataSource = FakeMovieRemoteDataSource(movieDetail = null)
+        localDataSource = FakeMovieLocalDataSource()
+        repository = MovieRepositoryImpl(remoteDataSource, localDataSource)
 
         val result = repository.getMovieDetail(99)
 

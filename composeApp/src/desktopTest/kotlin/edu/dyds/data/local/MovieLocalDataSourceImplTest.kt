@@ -3,14 +3,21 @@ package edu.dyds.data.local
 import edu.dyds.domain.entities.Movie
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
+import kotlin.test.BeforeTest
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 class MovieLocalDataSourceImplTest {
 
+    private lateinit var localDataSource: MovieLocalDataSource
+
+    @BeforeTest
+    fun setUp() {
+        localDataSource = MovieLocalDataSourceImpl()
+    }
+
     @Test
     fun `getCachedMovies returns empty list by default`() = runTest {
-        val localDataSource = MovieLocalDataSourceImpl()
 
         val result = localDataSource.getCachedMovies()
 
@@ -19,7 +26,6 @@ class MovieLocalDataSourceImplTest {
 
     @Test
     fun `saveMovies replaces the cached movies`() = runTest {
-        val localDataSource = MovieLocalDataSourceImpl()
         localDataSource.saveMovies(listOf(movie(id = 1), movie(id = 2)))
 
         localDataSource.saveMovies(listOf(movie(id = 3)))
@@ -30,7 +36,6 @@ class MovieLocalDataSourceImplTest {
 
     @Test
     fun `getCachedMovies returns a snapshot of the cache`() = runTest {
-        val localDataSource = MovieLocalDataSourceImpl()
         localDataSource.saveMovies(listOf(movie(id = 1)))
 
         val snapshot = localDataSource.getCachedMovies().toMutableList()
@@ -43,7 +48,6 @@ class MovieLocalDataSourceImplTest {
     @Test
     fun `getCachedMovieDetail returns movie when id exists`() = runTest {
         val expectedMovie = movie(id = 7)
-        val localDataSource = MovieLocalDataSourceImpl()
         localDataSource.saveMovies(listOf(movie(id = 1), expectedMovie))
 
         val result = localDataSource.getCachedMovieDetail(7)
@@ -53,7 +57,6 @@ class MovieLocalDataSourceImplTest {
 
     @Test
     fun `getCachedMovieDetail returns null when id does not exist`() = runTest {
-        val localDataSource = MovieLocalDataSourceImpl()
         localDataSource.saveMovies(listOf(movie(id = 1)))
 
         val result = localDataSource.getCachedMovieDetail(99)
