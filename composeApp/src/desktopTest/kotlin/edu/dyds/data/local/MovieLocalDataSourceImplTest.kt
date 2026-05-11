@@ -1,6 +1,7 @@
 package edu.dyds.data.local
 
 import edu.dyds.domain.entities.Movie
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.BeforeTest
@@ -62,6 +63,76 @@ class MovieLocalDataSourceImplTest {
         val result = localDataSource.getCachedMovieDetail(99)
 
         assertNull(result)
+    }
+
+    @Test
+    fun `concurrent access is thread safe`() {
+        val movieCount = 50
+        val testMovies = (1..movieCount).map { movie(id = it) }
+
+        val threads = mutableListOf<Thread>()
+        val errors = mutableListOf<Throwable>()
+
+        // Launch write threads
+        repeat(5) {
+            threads.add(Thread {
+                try {
+                    repeat(10) {
+                        runBlocking {
+                            localDataSource.saveMovies(testMovies)
+                        }
+                    }
+                } catch (e: Exception) {
+                    errors.add(e)
+                }
+            })
+        }
+
+        // Launch read threads
+        repeat(5) {
+            threads.add(Thread {
+                try {
+                    repeat(20) {
+                        runBlocking {
+                            localDataSource.getCachedMovies()
+                        }
+                    }
+                } catch (e: Exception) {
+                    errors.add(e)
+                }
+            })
+        }
+
+        // Launch detail lookup threads
+        repeat(5) {
+            threads.add(Thread {
+                try {
+                    repeat(20) {
+                        for (id in 1..movieCount) {
+                            runBlocking {
+                                localDataSource.getCachedMovieDetail(id)
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    errors.add(e)
+                }
+            })
+        }
+
+        // Start all threads
+        threads.forEach { it.start() }
+
+        // Wait for all threads to complete
+        threads.forEach { it.join() }
+
+        // Verify no errors occurred
+        assertEquals(emptyList(), errors)
+
+        // Verify final state is consistent
+        val finalMovies = runBlocking { localDataSource.getCachedMovies() }
+        assertEquals(movieCount, finalMovies.size)
+        assertEquals((1..movieCount).toList(), finalMovies.map { it.id })
     }
 
     private fun movie(id: Int) = Movie(
