@@ -1,34 +1,22 @@
 package edu.dyds.data.repositoriesImpl
 
-import edu.dyds.data.local.MovieLocalDataSource
-import edu.dyds.data.remote.MovieRemoteDataSource
+import edu.dyds.data.fakes.FakeMovieLocalDataSource
+import edu.dyds.data.fakes.FakeMovieRemoteDataSource
 import edu.dyds.data.remote.RemoteMovie
 import edu.dyds.domain.entities.Movie
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
-import kotlin.test.BeforeTest
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 class MovieRepositoryImplTest {
 
-    private lateinit var remoteDataSource: FakeMovieRemoteDataSource
-    private lateinit var localDataSource: FakeMovieLocalDataSource
-    private lateinit var repository: MovieRepositoryImpl
-
-    @BeforeTest
-    fun setUp() {
-        remoteDataSource = FakeMovieRemoteDataSource()
-        localDataSource = FakeMovieLocalDataSource()
-        repository = MovieRepositoryImpl(remoteDataSource, localDataSource)
-    }
-
     @Test
-    fun `getMovies returns cached movies when local data source is not empty`() = runTest {
+    fun `when local cache already contains movies, getMovies returns cached movies`() = runTest {
         val cachedMovies = listOf(movie(id = 1), movie(id = 2))
-        remoteDataSource = FakeMovieRemoteDataSource(popularMovies = listOf(remoteMovie(id = 99)))
-        localDataSource = FakeMovieLocalDataSource(cachedMovies = cachedMovies)
-        repository = MovieRepositoryImpl(remoteDataSource, localDataSource)
+        val remoteDataSource = FakeMovieRemoteDataSource(popularMovies = listOf(remoteMovie(id = 99)))
+        val localDataSource = FakeMovieLocalDataSource(cachedMovies = cachedMovies)
+        val repository = MovieRepositoryImpl(remoteDataSource, localDataSource)
 
         val result = repository.getMovies()
 
@@ -38,8 +26,8 @@ class MovieRepositoryImplTest {
     }
 
     @Test
-    fun `getMovies fetches remote movies maps them and stores them when cache is empty`() = runTest {
-        remoteDataSource = FakeMovieRemoteDataSource(
+    fun `when local cache is empty, getMovies fetches maps and stores remote movies`() = runTest {
+        val remoteDataSource = FakeMovieRemoteDataSource(
             popularMovies = listOf(
                 remoteMovie(
                     id = 1,
@@ -55,8 +43,8 @@ class MovieRepositoryImplTest {
                 )
             )
         )
-        localDataSource = FakeMovieLocalDataSource()
-        repository = MovieRepositoryImpl(remoteDataSource, localDataSource)
+        val localDataSource = FakeMovieLocalDataSource()
+        val repository = MovieRepositoryImpl(remoteDataSource, localDataSource)
 
         val result = repository.getMovies()
 
@@ -77,22 +65,23 @@ class MovieRepositoryImplTest {
     }
 
     @Test
-    fun `getMovieDetail returns cached detail when local data source has it`() = runTest {
+    fun `when requested detail is already cached, getMovieDetail returns cached movie`() = runTest {
         val cachedMovie = movie(id = 7)
-        remoteDataSource = FakeMovieRemoteDataSource(movieDetail = remoteMovie(id = 99))
-        localDataSource = FakeMovieLocalDataSource(cachedMovies = listOf(cachedMovie))
-        repository = MovieRepositoryImpl(remoteDataSource, localDataSource)
+        val remoteDataSource = FakeMovieRemoteDataSource(movieDetail = remoteMovie(id = 99))
+        val localDataSource = FakeMovieLocalDataSource(cachedMovies = listOf(cachedMovie))
+        val repository = MovieRepositoryImpl(remoteDataSource, localDataSource)
 
         val result = repository.getMovieDetail(7)
 
         assertEquals(cachedMovie, result)
+        assertEquals(0, remoteDataSource.getMovieDetailInvocationCount)
         assertNull(remoteDataSource.requestedId)
         assertEquals(0, localDataSource.saveInvocationCount)
     }
 
     @Test
-    fun `getMovieDetail fetches remote detail keeps existing cache and returns mapped movie`() = runTest {
-        remoteDataSource = FakeMovieRemoteDataSource(
+    fun `when detail is missing from cache and remote has it, getMovieDetail keeps cache and returns mapped movie`() = runTest {
+        val remoteDataSource = FakeMovieRemoteDataSource(
             movieDetail = remoteMovie(
                 id = 7,
                 title = "Movie 7",
@@ -106,11 +95,12 @@ class MovieRepositoryImplTest {
                 voteAverage = 7.7,
             )
         )
-        localDataSource = FakeMovieLocalDataSource(cachedMovies = listOf(movie(id = 8)))
-        repository = MovieRepositoryImpl(remoteDataSource, localDataSource)
+        val localDataSource = FakeMovieLocalDataSource(cachedMovies = listOf(movie(id = 8)))
+        val repository = MovieRepositoryImpl(remoteDataSource, localDataSource)
 
         val result = repository.getMovieDetail(7)
 
+        assertEquals(1, remoteDataSource.getMovieDetailInvocationCount)
         assertEquals(7, remoteDataSource.requestedId)
         assertEquals(1, localDataSource.saveInvocationCount)
         assertEquals(2, localDataSource.savedMovies?.size)
@@ -129,15 +119,16 @@ class MovieRepositoryImplTest {
     }
 
     @Test
-    fun `getMovieDetail adds remote detail to cache when movie was not cached`() = runTest {
-        remoteDataSource = FakeMovieRemoteDataSource(
+    fun `when cache already has other movies, getMovieDetail appends fetched detail to cache`() = runTest {
+        val remoteDataSource = FakeMovieRemoteDataSource(
             movieDetail = remoteMovie(id = 5, title = "Movie 5")
         )
-        localDataSource = FakeMovieLocalDataSource(cachedMovies = listOf(movie(id = 1)))
-        repository = MovieRepositoryImpl(remoteDataSource, localDataSource)
+        val localDataSource = FakeMovieLocalDataSource(cachedMovies = listOf(movie(id = 1)))
+        val repository = MovieRepositoryImpl(remoteDataSource, localDataSource)
 
         val result = repository.getMovieDetail(5)
 
+        assertEquals(1, remoteDataSource.getMovieDetailInvocationCount)
         assertEquals(5, remoteDataSource.requestedId)
         assertEquals(1, localDataSource.saveInvocationCount)
         assertEquals(listOf(1, 5), localDataSource.savedMovies?.map { it.id })
@@ -145,56 +136,17 @@ class MovieRepositoryImplTest {
     }
 
     @Test
-    fun `getMovieDetail returns null when remote data source has no detail`() = runTest {
-        remoteDataSource = FakeMovieRemoteDataSource(movieDetail = null)
-        localDataSource = FakeMovieLocalDataSource()
-        repository = MovieRepositoryImpl(remoteDataSource, localDataSource)
+    fun `when remote data source returns no detail, getMovieDetail returns null without updating cache`() = runTest {
+        val remoteDataSource = FakeMovieRemoteDataSource(movieDetail = null)
+        val localDataSource = FakeMovieLocalDataSource()
+        val repository = MovieRepositoryImpl(remoteDataSource, localDataSource)
 
         val result = repository.getMovieDetail(99)
 
+        assertEquals(1, remoteDataSource.getMovieDetailInvocationCount)
         assertEquals(99, remoteDataSource.requestedId)
         assertNull(result)
         assertEquals(0, localDataSource.saveInvocationCount)
-    }
-
-    private class FakeMovieRemoteDataSource(
-        private val popularMovies: List<RemoteMovie> = emptyList(),
-        private val movieDetail: RemoteMovie? = null,
-    ) : MovieRemoteDataSource {
-
-        var requestedId: Int? = null
-        var getPopularMoviesInvocationCount: Int = 0
-
-        override suspend fun getPopularMovies(): List<RemoteMovie> {
-            getPopularMoviesInvocationCount++
-            return popularMovies
-        }
-
-        override suspend fun getMovieDetail(id: Int): RemoteMovie? {
-            requestedId = id
-            return movieDetail
-        }
-    }
-
-    private class FakeMovieLocalDataSource(
-        cachedMovies: List<Movie> = emptyList(),
-    ) : MovieLocalDataSource {
-
-        private var cachedMoviesState: List<Movie> = cachedMovies
-        var saveInvocationCount: Int = 0
-        var savedMovies: List<Movie>? = null
-
-        override suspend fun getCachedMovies(): List<Movie> = cachedMoviesState
-
-        override suspend fun saveMovies(movies: List<Movie>) {
-            saveInvocationCount++
-            savedMovies = movies
-            cachedMoviesState = movies
-        }
-
-        override suspend fun getCachedMovieDetail(id: Int): Movie? {
-            return cachedMoviesState.find { it.id == id }
-        }
     }
 
     private fun remoteMovie(

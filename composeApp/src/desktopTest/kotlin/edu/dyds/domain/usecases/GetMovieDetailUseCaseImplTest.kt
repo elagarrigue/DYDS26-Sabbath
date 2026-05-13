@@ -1,68 +1,47 @@
 package edu.dyds.domain.usecases
 
+import edu.dyds.domain.fakes.FakeMovieRepository
 import edu.dyds.domain.entities.Movie
-import edu.dyds.domain.repositories.MovieRepository
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
-import kotlin.test.BeforeTest
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertSame
 
 class GetMovieDetailUseCaseImplTest {
 
-    private lateinit var repository: FakeMovieRepository
-    private lateinit var useCase: GetMovieDetailUseCaseImpl
-
-    @BeforeTest
-    fun setUp() {
-        repository = FakeMovieRepository()
-        useCase = GetMovieDetailUseCaseImpl(repository)
-    }
-
     @Test
-    fun `invoke delegates requested id to repository`() = runTest {
-        repository = FakeMovieRepository(movieDetail = movie(id = 8))
-        useCase = GetMovieDetailUseCaseImpl(repository)
+    fun `when invoked with a movie id, invoke delegates that id to repository`() = runTest {
+        val repository = FakeMovieRepository(movieDetail = movie(id = 8))
+        val useCase = GetMovieDetailUseCaseImpl(repository)
 
         useCase(8)
 
         assertEquals(8, repository.requestedId)
+        assertEquals(1, repository.getMovieDetailInvocationCount)
     }
 
     @Test
-    fun `invoke returns movie provided by repository`() = runTest {
+    fun `when repository returns a movie, invoke returns the same movie instance`() = runTest {
         val expectedMovie = movie(id = 3)
-        repository = FakeMovieRepository(movieDetail = expectedMovie)
-        useCase = GetMovieDetailUseCaseImpl(repository)
+        val repository = FakeMovieRepository(movieDetail = expectedMovie)
+        val useCase = GetMovieDetailUseCaseImpl(repository)
 
         val result = useCase(3)
 
+        assertEquals(1, repository.getMovieDetailInvocationCount)
         assertSame(expectedMovie, result)
     }
 
     @Test
-    fun `invoke returns null when repository has no detail`() = runTest {
-        repository = FakeMovieRepository(movieDetail = null)
-        useCase = GetMovieDetailUseCaseImpl(repository)
+    fun `when repository returns null, invoke returns null`() = runTest {
+        val repository = FakeMovieRepository(movieDetail = null)
+        val useCase = GetMovieDetailUseCaseImpl(repository)
 
         val result = useCase(42)
 
+        assertEquals(1, repository.getMovieDetailInvocationCount)
         assertNull(result)
-    }
-
-    private class FakeMovieRepository(
-        private val movieDetail: Movie? = null,
-    ) : MovieRepository {
-
-        var requestedId: Int? = null
-
-        override suspend fun getMovies(): List<Movie> = emptyList()
-
-        override suspend fun getMovieDetail(id: Int): Movie? {
-            requestedId = id
-            return movieDetail
-        }
     }
 
     private fun movie(id: Int) = Movie(

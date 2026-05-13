@@ -4,8 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import edu.dyds.domain.entities.Movie
 import edu.dyds.domain.usecases.GetMovieDetailUseCase
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class DetailViewModel(
@@ -14,7 +15,7 @@ class DetailViewModel(
 
     private val movieDetailStateMutableStateFlow = MutableStateFlow(MovieDetailUiState())
 
-    val movieDetailStateFlow: Flow<MovieDetailUiState> = movieDetailStateMutableStateFlow
+    val movieDetailStateFlow: StateFlow<MovieDetailUiState> = movieDetailStateMutableStateFlow.asStateFlow()
 
     fun getMovieDetail(id: Int) {
         viewModelScope.launch {

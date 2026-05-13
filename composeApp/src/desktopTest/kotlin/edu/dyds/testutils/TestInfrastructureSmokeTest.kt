@@ -15,7 +15,7 @@ class TestInfrastructureSmokeTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     @Test
-    fun `main dispatcher can be controlled in unit tests`() = runTest {
+    fun `when unit tests run with MainDispatcherRule, the main dispatcher can be controlled`() = runTest {
         val executed = withContext(Dispatchers.Main) { true }
 
         assertTrue(executed)

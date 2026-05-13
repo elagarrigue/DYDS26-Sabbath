@@ -12,11 +12,10 @@ kotlin {
     
     sourceSets {
         val desktopMain by getting
+        val commonTest by getting
+        val desktopTest by getting
 
         commonMain.dependencies {
-            implementation(libs.kotlin.test)
-            implementation(libs.kotlinx.coroutines.test)
-
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material3)
@@ -33,11 +32,21 @@ kotlin {
             implementation(libs.androidx.navigation.compose)
             implementation(libs.androidx.lifecycle.viewmodel.compose)
         }
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
+        }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutines.swing)
             implementation(libs.ktor.client.okhttp)
             runtimeOnly(libs.slf4j.simple)
+        }
+        desktopTest.dependencies {
+            implementation(libs.kotlin.test.junit)
+            implementation(libs.junit)
+            implementation(libs.turbine)
+            implementation(libs.ktor.client.mock)
         }
     }
 

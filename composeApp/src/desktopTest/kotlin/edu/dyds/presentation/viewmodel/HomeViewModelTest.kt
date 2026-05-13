@@ -1,22 +1,17 @@
 package edu.dyds.presentation.viewmodel
 
+import app.cash.turbine.test
 import edu.dyds.domain.entities.QualifiedMovie
-import edu.dyds.domain.entities.Movie
-import edu.dyds.domain.usecases.GetMoviesUseCase
 import edu.dyds.presentation.home.HomeViewModel
+import edu.dyds.presentation.fakes.FakeGetMoviesUseCase
 import edu.dyds.testutils.MainDispatcherRule
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.runCurrent
 import org.junit.Rule
 import kotlin.test.Test
-import kotlin.test.BeforeTest
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelTest {
@@ -24,92 +19,54 @@ class HomeViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    private lateinit var useCase: GetMoviesUseCase
-    private lateinit var viewModel: HomeViewModel
-
-    @BeforeTest
-    fun setUp() {
-        useCase = FakeGetMoviesUseCase(emptyList())
-        viewModel = HomeViewModel(useCase)
-    }
-
     @Test
-    fun `getAllMovies emits initial loading and final populated state`() = runTest {
+    fun `when use case result is pending and then available, getAllMovies emits loading and populated states`() = runTest {
         val expectedMovies = listOf(
             qualifiedMovie(id = 1, isGoodMovie = true),
             qualifiedMovie(id = 2, isGoodMovie = false),
         )
-        val resultGate = CompletableDeferred<List<QualifiedMovie>>()
-        useCase = SuspendedGetMoviesUseCase(resultGate)
-        viewModel = HomeViewModel(useCase)
-        val initialState = viewModel.moviesStateFlow.first()
+        val resultGate = CompletableDeferred<Unit>()
+        val useCase = FakeGetMoviesUseCase(result = expectedMovies, gate = resultGate)
+        val viewModel = HomeViewModel(useCase)
 
-        assertFalse(initialState.isLoading)
-        assertTrue(initialState.movies.isEmpty())
+        viewModel.moviesStateFlow.test {
+            assertEquals(HomeViewModel.MoviesUiState(), awaitItem())
 
-        viewModel.getAllMovies()
-        runCurrent()
+            viewModel.getAllMovies()
 
-        val loadingState = viewModel.moviesStateFlow.first()
+            assertEquals(1, useCase.invocationCount)
+            assertEquals(
+                HomeViewModel.MoviesUiState(isLoading = true),
+                awaitItem()
+            )
 
-        assertEquals(1, (useCase as SuspendedGetMoviesUseCase).invocationCount)
-        assertTrue(loadingState.isLoading)
-        assertTrue(loadingState.movies.isEmpty())
+            resultGate.complete(Unit)
+            advanceUntilIdle()
 
-        resultGate.complete(expectedMovies)
-        advanceUntilIdle()
-
-        val finalState = viewModel.moviesStateFlow.first()
-
-        assertFalse(finalState.isLoading)
-        assertEquals(expectedMovies, finalState.movies)
+            assertEquals(
+                HomeViewModel.MoviesUiState(movies = expectedMovies),
+                awaitItem()
+            )
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 
     @Test
-    fun `getAllMovies emits final empty state when use case returns no movies`() = runTest {
-        useCase = FakeGetMoviesUseCase(emptyList())
-        viewModel = HomeViewModel(useCase)
+    fun `when use case returns no movies, getAllMovies emits an empty final state`() = runTest {
+        val useCase = FakeGetMoviesUseCase(result = emptyList())
+        val viewModel = HomeViewModel(useCase)
 
         viewModel.getAllMovies()
         advanceUntilIdle()
 
-        val finalState = viewModel.moviesStateFlow.first()
-
-        assertEquals(1, (useCase as FakeGetMoviesUseCase).invocationCount)
-        assertFalse(finalState.isLoading)
-        assertTrue(finalState.movies.isEmpty())
-    }
-
-    private class FakeGetMoviesUseCase(
-        private val result: List<QualifiedMovie> = emptyList(),
-    ) : GetMoviesUseCase {
-
-        var invocationCount: Int = 0
-
-        override suspend fun invoke(): List<QualifiedMovie> {
-            invocationCount++
-            return result
-        }
-    }
-
-    private class SuspendedGetMoviesUseCase(
-        private val resultGate: CompletableDeferred<List<QualifiedMovie>>,
-    ) : GetMoviesUseCase {
-
-        var invocationCount: Int = 0
-
-        override suspend fun invoke(): List<QualifiedMovie> {
-            invocationCount++
-            return resultGate.await()
-        }
+        assertEquals(1, useCase.invocationCount)
+        assertEquals(HomeViewModel.MoviesUiState(), viewModel.moviesStateFlow.value)
     }
 
     private fun qualifiedMovie(id: Int, isGoodMovie: Boolean) = QualifiedMovie(
-        movie = Movie(
-            id = id,
-            title = "Movie $id",
-            poster = "poster-$id",
-        ),
+        id = id,
+        title = "Movie $id",
+        poster = "poster-$id",
         isGoodMovie = isGoodMovie,
     )
 }

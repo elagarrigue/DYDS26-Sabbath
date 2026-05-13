@@ -3,22 +3,15 @@ package edu.dyds.data.local
 import edu.dyds.domain.entities.Movie
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
-import kotlin.test.Test
-import kotlin.test.BeforeTest
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.test.Test
 
 class MovieLocalDataSourceImplTest {
 
-    private lateinit var localDataSource: MovieLocalDataSource
-
-    @BeforeTest
-    fun setUp() {
-        localDataSource = MovieLocalDataSourceImpl()
-    }
-
     @Test
-    fun `getCachedMovies returns empty list by default`() = runTest {
+    fun `when cache was never populated, getCachedMovies returns an empty list`() = runTest {
+        val localDataSource: MovieLocalDataSource = MovieLocalDataSourceImpl()
 
         val result = localDataSource.getCachedMovies()
 
@@ -26,7 +19,9 @@ class MovieLocalDataSourceImplTest {
     }
 
     @Test
-    fun `saveMovies replaces the cached movies`() = runTest {
+    fun `when saveMovies is called twice, the second call replaces the cache`() = runTest {
+        val localDataSource: MovieLocalDataSource = MovieLocalDataSourceImpl()
+
         localDataSource.saveMovies(listOf(movie(id = 1), movie(id = 2)))
 
         localDataSource.saveMovies(listOf(movie(id = 3)))
@@ -36,7 +31,9 @@ class MovieLocalDataSourceImplTest {
     }
 
     @Test
-    fun `getCachedMovies returns a snapshot of the cache`() = runTest {
+    fun `when cached movies are read, getCachedMovies returns a snapshot of the cache`() = runTest {
+        val localDataSource: MovieLocalDataSource = MovieLocalDataSourceImpl()
+
         localDataSource.saveMovies(listOf(movie(id = 1)))
 
         val snapshot = localDataSource.getCachedMovies().toMutableList()
@@ -47,7 +44,8 @@ class MovieLocalDataSourceImplTest {
     }
 
     @Test
-    fun `getCachedMovieDetail returns movie when id exists`() = runTest {
+    fun `when requested id exists in cache, getCachedMovieDetail returns that movie`() = runTest {
+        val localDataSource: MovieLocalDataSource = MovieLocalDataSourceImpl()
         val expectedMovie = movie(id = 7)
         localDataSource.saveMovies(listOf(movie(id = 1), expectedMovie))
 
@@ -57,7 +55,8 @@ class MovieLocalDataSourceImplTest {
     }
 
     @Test
-    fun `getCachedMovieDetail returns null when id does not exist`() = runTest {
+    fun `when requested id does not exist in cache, getCachedMovieDetail returns null`() = runTest {
+        val localDataSource: MovieLocalDataSource = MovieLocalDataSourceImpl()
         localDataSource.saveMovies(listOf(movie(id = 1)))
 
         val result = localDataSource.getCachedMovieDetail(99)
@@ -66,7 +65,8 @@ class MovieLocalDataSourceImplTest {
     }
 
     @Test
-    fun `concurrent access is thread safe`() {
+    fun `when reads and writes happen concurrently, cache operations remain thread safe`() {
+        val localDataSource: MovieLocalDataSource = MovieLocalDataSourceImpl()
         val movieCount = 50
         val testMovies = (1..movieCount).map { movie(id = it) }
 
