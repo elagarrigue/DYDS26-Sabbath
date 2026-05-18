@@ -5,9 +5,7 @@ import edu.dyds.domain.entities.QualifiedMovie
 import edu.dyds.presentation.home.HomeViewModel
 import edu.dyds.presentation.fakes.FakeGetMoviesUseCase
 import edu.dyds.testutils.MainDispatcherRule
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import kotlin.test.Test
@@ -20,13 +18,12 @@ class HomeViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     @Test
-    fun `when use case result is pending and then available, getAllMovies emits loading and populated states`() = runTest {
+    fun `when use case returns movies, getAllMovies emits loading and populated states`() = runTest {
         val expectedMovies = listOf(
             qualifiedMovie(id = 1, isGoodMovie = true),
             qualifiedMovie(id = 2, isGoodMovie = false),
         )
-        val resultGate = CompletableDeferred<Unit>()
-        val useCase = FakeGetMoviesUseCase(result = expectedMovies, gate = resultGate)
+        val useCase = FakeGetMoviesUseCase(result = expectedMovies)
         val viewModel = HomeViewModel(useCase)
 
         viewModel.moviesStateFlow.test {
@@ -40,9 +37,6 @@ class HomeViewModelTest {
                 awaitItem()
             )
 
-            resultGate.complete(Unit)
-            advanceUntilIdle()
-
             assertEquals(
                 HomeViewModel.MoviesUiState(movies = expectedMovies),
                 awaitItem()
@@ -52,15 +46,26 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `when use case returns no movies, getAllMovies emits an empty final state`() = runTest {
+    fun `when use case returns no movies, getAllMovies emits loading and empty final states`() = runTest {
         val useCase = FakeGetMoviesUseCase(result = emptyList())
         val viewModel = HomeViewModel(useCase)
 
-        viewModel.getAllMovies()
-        advanceUntilIdle()
+        viewModel.moviesStateFlow.test {
+            assertEquals(HomeViewModel.MoviesUiState(), awaitItem())
 
-        assertEquals(1, useCase.invocationCount)
-        assertEquals(HomeViewModel.MoviesUiState(), viewModel.moviesStateFlow.value)
+            viewModel.getAllMovies()
+
+            assertEquals(1, useCase.invocationCount)
+            assertEquals(
+                HomeViewModel.MoviesUiState(isLoading = true),
+                awaitItem()
+            )
+            assertEquals(
+                HomeViewModel.MoviesUiState(),
+                awaitItem()
+            )
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 
     private fun qualifiedMovie(id: Int, isGoodMovie: Boolean) = QualifiedMovie(
