@@ -2,11 +2,10 @@ package edu.dyds.presentation.fakes
 
 import edu.dyds.domain.entities.Movie
 import edu.dyds.domain.usecases.GetMovieDetailUseCase
-import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.yield
 
 class FakeGetMovieDetailUseCase(
     private val result: Movie? = null,
-    private val gate: CompletableDeferred<Unit>? = null,
 ) : GetMovieDetailUseCase {
 
     var invocationCount: Int = 0
@@ -15,7 +14,7 @@ class FakeGetMovieDetailUseCase(
     override suspend fun invoke(id: Int): Movie? {
         invocationCount++
         requestedId = id
-        gate?.await()
+        yield()
         return result
     }
 }
