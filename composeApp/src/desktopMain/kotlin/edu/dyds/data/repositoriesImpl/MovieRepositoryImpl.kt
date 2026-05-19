@@ -32,7 +32,7 @@ class MovieRepositoryImpl(
             val domainDetail = remoteDetail.toDomainMovie()
             val current = movieLocalDataSource.getCachedMovies().toMutableList()
             val index = current.indexOfFirst { it.id == domainDetail.id }
-            if (index >= 0) current[index] = domainDetail else current.add(domainDetail)
+            current.add(domainDetail)
             movieLocalDataSource.saveMovies(current)
             return domainDetail
         }
