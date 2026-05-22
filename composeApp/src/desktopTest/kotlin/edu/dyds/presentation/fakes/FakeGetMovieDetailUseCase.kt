@@ -9,11 +9,11 @@ class FakeGetMovieDetailUseCase(
 ) : GetMovieDetailUseCase {
 
     var invocationCount: Int = 0
-    var requestedId: Int? = null
+    var requestedTitle: String? = null
 
-    override suspend fun invoke(id: Int): Movie? {
+    override suspend fun invoke(title: String): Movie? {
         invocationCount++
-        requestedId = id
+        requestedTitle = title
         yield()
         return result
     }

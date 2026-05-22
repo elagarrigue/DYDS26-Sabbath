@@ -65,22 +65,22 @@ class MovieRepositoryImplTest {
     }
 
     @Test
-    fun `when requested detail is already cached, getMovieDetail returns cached movie`() = runTest {
-        val cachedMovie = movie(id = 7)
+    fun `when requested detail is already cached, getMovieDetailByTitle returns cached movie`() = runTest {
+        val cachedMovie = movie(id = 7, title = "Movie 7")
         val remoteDataSource = FakeMovieRemoteDataSource(movieDetail = remoteMovie(id = 99))
         val localDataSource = FakeMovieLocalDataSource(cachedMovies = listOf(cachedMovie))
         val repository = MovieRepositoryImpl(remoteDataSource, localDataSource)
 
-        val result = repository.getMovieDetail(7)
+        val result = repository.getMovieDetailByTitle("Movie 7")
 
         assertEquals(cachedMovie, result)
-        assertEquals(0, remoteDataSource.getMovieDetailInvocationCount)
-        assertNull(remoteDataSource.requestedId)
+        assertEquals(0, remoteDataSource.searchMovieByTitleInvocationCount)
+        assertNull(remoteDataSource.requestedTitle)
         assertEquals(0, localDataSource.saveInvocationCount)
     }
 
     @Test
-    fun `when detail is missing from cache and remote has it, getMovieDetail keeps cache and returns mapped movie`() = runTest {
+    fun `when detail is missing from cache and remote has it, getMovieDetailByTitle keeps cache and returns mapped movie`() = runTest {
         val remoteDataSource = FakeMovieRemoteDataSource(
             movieDetail = remoteMovie(
                 id = 7,
@@ -98,10 +98,10 @@ class MovieRepositoryImplTest {
         val localDataSource = FakeMovieLocalDataSource(cachedMovies = listOf(movie(id = 8)))
         val repository = MovieRepositoryImpl(remoteDataSource, localDataSource)
 
-        val result = repository.getMovieDetail(7)
+        val result = repository.getMovieDetailByTitle("Movie 7")
 
-        assertEquals(1, remoteDataSource.getMovieDetailInvocationCount)
-        assertEquals(7, remoteDataSource.requestedId)
+        assertEquals(1, remoteDataSource.searchMovieByTitleInvocationCount)
+        assertEquals("Movie 7", remoteDataSource.requestedTitle)
         assertEquals(1, localDataSource.saveInvocationCount)
         assertEquals(2, localDataSource.savedMovies?.size)
         assertEquals(listOf(8, 7), localDataSource.savedMovies?.map { it.id })
@@ -119,32 +119,32 @@ class MovieRepositoryImplTest {
     }
 
     @Test
-    fun `when cache already has other movies, getMovieDetail appends fetched detail to cache`() = runTest {
+    fun `when cache already has other movies, getMovieDetailByTitle appends fetched detail to cache`() = runTest {
         val remoteDataSource = FakeMovieRemoteDataSource(
             movieDetail = remoteMovie(id = 5, title = "Movie 5")
         )
         val localDataSource = FakeMovieLocalDataSource(cachedMovies = listOf(movie(id = 1)))
         val repository = MovieRepositoryImpl(remoteDataSource, localDataSource)
 
-        val result = repository.getMovieDetail(5)
+        val result = repository.getMovieDetailByTitle("Movie 5")
 
-        assertEquals(1, remoteDataSource.getMovieDetailInvocationCount)
-        assertEquals(5, remoteDataSource.requestedId)
+        assertEquals(1, remoteDataSource.searchMovieByTitleInvocationCount)
+        assertEquals("Movie 5", remoteDataSource.requestedTitle)
         assertEquals(1, localDataSource.saveInvocationCount)
         assertEquals(listOf(1, 5), localDataSource.savedMovies?.map { it.id })
         assertEquals(5, result?.id)
     }
 
     @Test
-    fun `when remote data source returns no detail, getMovieDetail returns null without updating cache`() = runTest {
+    fun `when remote data source returns no detail, getMovieDetailByTitle returns null without updating cache`() = runTest {
         val remoteDataSource = FakeMovieRemoteDataSource(movieDetail = null)
         val localDataSource = FakeMovieLocalDataSource()
         val repository = MovieRepositoryImpl(remoteDataSource, localDataSource)
 
-        val result = repository.getMovieDetail(99)
+        val result = repository.getMovieDetailByTitle("Movie 99")
 
-        assertEquals(1, remoteDataSource.getMovieDetailInvocationCount)
-        assertEquals(99, remoteDataSource.requestedId)
+        assertEquals(1, remoteDataSource.searchMovieByTitleInvocationCount)
+        assertEquals("Movie 99", remoteDataSource.requestedTitle)
         assertNull(result)
         assertEquals(0, localDataSource.saveInvocationCount)
     }

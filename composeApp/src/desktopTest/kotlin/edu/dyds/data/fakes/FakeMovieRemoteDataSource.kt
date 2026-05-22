@@ -8,18 +8,18 @@ class FakeMovieRemoteDataSource(
     private val movieDetail: RemoteMovie? = null,
 ) : MovieRemoteDataSource {
 
-    var requestedId: Int? = null
+    var requestedTitle: String? = null
     var getPopularMoviesInvocationCount: Int = 0
-    var getMovieDetailInvocationCount: Int = 0
+    var searchMovieByTitleInvocationCount: Int = 0
 
     override suspend fun getPopularMovies(): List<RemoteMovie> {
         getPopularMoviesInvocationCount++
         return popularMovies
     }
 
-    override suspend fun getMovieDetail(id: Int): RemoteMovie? {
-        getMovieDetailInvocationCount++
-        requestedId = id
+    override suspend fun searchMovieByTitle(title: String): RemoteMovie? {
+        searchMovieByTitleInvocationCount++
+        requestedTitle = title
         return movieDetail
     }
 }

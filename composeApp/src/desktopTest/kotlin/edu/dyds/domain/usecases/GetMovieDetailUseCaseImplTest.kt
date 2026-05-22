@@ -11,14 +11,14 @@ import kotlin.test.assertSame
 class GetMovieDetailUseCaseImplTest {
 
     @Test
-    fun `when invoked with a movie id, invoke delegates that id to repository`() = runTest {
+    fun `when invoked with a movie title, invoke delegates that title to repository`() = runTest {
         val repository = FakeMovieRepository(movieDetail = movie(id = 8))
         val useCase = GetMovieDetailUseCaseImpl(repository)
 
-        useCase(8)
+        useCase("Movie 8")
 
-        assertEquals(8, repository.requestedId)
-        assertEquals(1, repository.getMovieDetailInvocationCount)
+        assertEquals("Movie 8", repository.requestedTitle)
+        assertEquals(1, repository.getMovieDetailByTitleInvocationCount)
     }
 
     @Test
@@ -27,9 +27,9 @@ class GetMovieDetailUseCaseImplTest {
         val repository = FakeMovieRepository(movieDetail = expectedMovie)
         val useCase = GetMovieDetailUseCaseImpl(repository)
 
-        val result = useCase(3)
+        val result = useCase("Movie 3")
 
-        assertEquals(1, repository.getMovieDetailInvocationCount)
+        assertEquals(1, repository.getMovieDetailByTitleInvocationCount)
         assertSame(expectedMovie, result)
     }
 
@@ -38,9 +38,9 @@ class GetMovieDetailUseCaseImplTest {
         val repository = FakeMovieRepository(movieDetail = null)
         val useCase = GetMovieDetailUseCaseImpl(repository)
 
-        val result = useCase(42)
+        val result = useCase("Movie 42")
 
-        assertEquals(1, repository.getMovieDetailInvocationCount)
+        assertEquals(1, repository.getMovieDetailByTitleInvocationCount)
         assertNull(result)
     }
 

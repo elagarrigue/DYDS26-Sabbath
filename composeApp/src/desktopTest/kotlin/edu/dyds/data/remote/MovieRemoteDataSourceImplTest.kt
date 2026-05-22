@@ -72,23 +72,29 @@ class MovieRemoteDataSourceImplTest {
     }
 
     @Test
-    fun `when a detail is requested and the call succeeds, getMovieDetail returns the parsed movie`() = runTest {
+    fun `when a title is searched and the call succeeds, searchMovieByTitle returns the first parsed movie`() = runTest {
         var requestedPath: String? = null
+        var requestedQuery: String? = null
         val httpClient = testHttpClient { request ->
             requestedPath = request.url.encodedPath
+            requestedQuery = request.url.parameters["query"]
             respond(
                 content = """
                     {
-                      "id": 42,
-                      "title": "Movie 42",
-                      "poster_path": "/poster42.jpg",
-                      "backdrop_path": "/backdrop42.jpg",
-                      "overview": "Overview 42",
-                      "original_language": "en",
-                      "original_title": "Original 42",
-                      "popularity": 42.0,
-                      "release_date": "2026-04-02",
-                      "vote_average": 8.4
+                      "results": [
+                        {
+                          "id": 42,
+                          "title": "Movie 42",
+                          "poster_path": "/poster42.jpg",
+                          "backdrop_path": "/backdrop42.jpg",
+                          "overview": "Overview 42",
+                          "original_language": "en",
+                          "original_title": "Original 42",
+                          "popularity": 42.0,
+                          "release_date": "2026-04-02",
+                          "vote_average": 8.4
+                        }
+                      ]
                     }
                 """.trimIndent(),
                 status = HttpStatusCode.OK,
@@ -97,9 +103,10 @@ class MovieRemoteDataSourceImplTest {
         }
         val dataSource = MovieRemoteDataSourceImpl(httpClient)
 
-        val result = dataSource.getMovieDetail(42)
+        val result = dataSource.searchMovieByTitle("Movie 42")
 
-        assertEquals("/3/movie/42", requestedPath)
+        assertEquals("/3/search/movie", requestedPath)
+        assertEquals("Movie 42", requestedQuery)
         assertEquals(
             RemoteMovie(
                 id = 42,
@@ -118,13 +125,13 @@ class MovieRemoteDataSourceImplTest {
     }
 
     @Test
-    fun `when the detail request fails, getMovieDetail returns null`() = runTest {
+    fun `when the search request fails, searchMovieByTitle returns null`() = runTest {
         val httpClient = testHttpClient {
             error("network failure")
         }
         val dataSource = MovieRemoteDataSourceImpl(httpClient)
 
-        val result = dataSource.getMovieDetail(42)
+        val result = dataSource.searchMovieByTitle("Movie 42")
 
         assertNull(result)
     }

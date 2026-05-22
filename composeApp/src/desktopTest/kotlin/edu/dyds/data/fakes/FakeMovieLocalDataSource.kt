@@ -19,7 +19,7 @@ class FakeMovieLocalDataSource(
         cachedMoviesState = movies
     }
 
-    override suspend fun getCachedMovieDetail(id: Int): Movie? {
-        return cachedMoviesState.find { it.id == id }
+    override suspend fun getCachedMovieDetail(title: String): Movie? {
+        return cachedMoviesState.find { it.title == title }
     }
 }
