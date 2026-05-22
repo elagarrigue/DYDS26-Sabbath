@@ -1,4 +1,4 @@
-package edu.dyds.data.remote
+package edu.dyds.data.remote.tmdb
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -8,7 +8,7 @@ class RemoteMovieMappingTest {
 
     @Test
     fun `when remote movie has image paths, toDomainMovie builds full image urls`() {
-        val remoteMovie = RemoteMovie(
+        val remoteMovie = TMDBMovie(
             id = 5,
             title = "Movie 5",
             posterPath = "/poster5.jpg",
@@ -37,7 +37,7 @@ class RemoteMovieMappingTest {
 
     @Test
     fun `when remote movie does not have image paths, toDomainMovie keeps poster empty and backdrop null`() {
-        val remoteMovie = RemoteMovie(
+        val remoteMovie = TMDBMovie(
             id = 8,
             title = "Movie 8",
             posterPath = null,

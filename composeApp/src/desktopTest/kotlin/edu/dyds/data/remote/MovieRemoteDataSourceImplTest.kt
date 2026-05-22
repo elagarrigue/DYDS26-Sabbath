@@ -1,4 +1,4 @@
-package edu.dyds.data.remote
+package edu.dyds.data.remote.tmdb
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
@@ -48,14 +48,14 @@ class MovieRemoteDataSourceImplTest {
                 headers = jsonHeaders,
             )
         }
-        val dataSource = MovieRemoteDataSourceImpl(httpClient)
+        val dataSource = TMDBMoviesRemoteSourceImpl(httpClient)
 
         val result = dataSource.getPopularMovies()
 
         assertEquals("/3/movie/popular", requestedPath)
         assertEquals(1, result.size)
         assertEquals(
-            RemoteMovie(
+            TMDBMovie(
                 id = 7,
                 title = "Movie 7",
                 posterPath = "/poster7.jpg",
@@ -101,14 +101,14 @@ class MovieRemoteDataSourceImplTest {
                 headers = jsonHeaders,
             )
         }
-        val dataSource = MovieRemoteDataSourceImpl(httpClient)
+        val dataSource = TMDBMoviesRemoteSourceImpl(httpClient)
 
         val result = dataSource.searchMovieByTitle("Movie 42")
 
         assertEquals("/3/search/movie", requestedPath)
         assertEquals("Movie 42", requestedQuery)
         assertEquals(
-            RemoteMovie(
+            TMDBMovie(
                 id = 42,
                 title = "Movie 42",
                 posterPath = "/poster42.jpg",
@@ -129,7 +129,7 @@ class MovieRemoteDataSourceImplTest {
         val httpClient = testHttpClient {
             error("network failure")
         }
-        val dataSource = MovieRemoteDataSourceImpl(httpClient)
+        val dataSource = TMDBMoviesRemoteSourceImpl(httpClient)
 
         val result = dataSource.searchMovieByTitle("Movie 42")
 

@@ -1,16 +1,16 @@
-package edu.dyds.data.remote
+package edu.dyds.data.remote.tmdb
 
 import edu.dyds.domain.entities.Movie
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-interface MovieRemoteDataSource {
-    suspend fun getPopularMovies(): List<RemoteMovie>
-    suspend fun searchMovieByTitle(title: String): RemoteMovie?
+interface TMDBMoviesRemoteSource {
+    suspend fun getPopularMovies(): List<TMDBMovie>
+    suspend fun searchMovieByTitle(title: String): TMDBMovie?
 }
 
 @Serializable
-data class RemoteMovie(
+data class TMDBMovie(
     val id: Int,
     val title: String = "",
     @SerialName("poster_path") val posterPath: String? = null,
@@ -23,7 +23,7 @@ data class RemoteMovie(
     @SerialName("vote_average") val voteAverage: Double = 0.0,
 )
 
-fun RemoteMovie.toDomainMovie(): Movie {
+fun TMDBMovie.toDomainMovie(): Movie {
     return Movie(
         id = id,
         title = title,
@@ -37,4 +37,5 @@ fun RemoteMovie.toDomainMovie(): Movie {
         voteAverage = voteAverage,
     )
 }
+
 

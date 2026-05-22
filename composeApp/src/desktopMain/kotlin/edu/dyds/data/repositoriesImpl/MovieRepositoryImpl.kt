@@ -1,13 +1,13 @@
 package edu.dyds.data.repositoriesImpl
 
 import edu.dyds.data.local.MovieLocalDataSource
-import edu.dyds.data.remote.MovieRemoteDataSource
-import edu.dyds.data.remote.toDomainMovie
+import edu.dyds.data.remote.tmdb.TMDBMoviesRemoteSource
+import edu.dyds.data.remote.tmdb.toDomainMovie
 import edu.dyds.domain.entities.Movie
 import edu.dyds.domain.repositories.MovieRepository
 
 class MovieRepositoryImpl(
-    private val movieRemoteDataSource: MovieRemoteDataSource,
+    private val movieRemoteDataSource: TMDBMoviesRemoteSource,
     private val movieLocalDataSource: MovieLocalDataSource,
 ) : MovieRepository {
     override suspend fun getMovies(): List<Movie> {

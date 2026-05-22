@@ -2,7 +2,7 @@ package edu.dyds.data.repositoriesImpl
 
 import edu.dyds.data.fakes.FakeMovieLocalDataSource
 import edu.dyds.data.fakes.FakeMovieRemoteDataSource
-import edu.dyds.data.remote.RemoteMovie
+import edu.dyds.data.remote.tmdb.TMDBMovie
 import edu.dyds.domain.entities.Movie
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -160,7 +160,7 @@ class MovieRepositoryImplTest {
         popularity: Double = 10.0,
         releaseDate: String = "2026-01-01",
         voteAverage: Double = 7.0,
-    ) = RemoteMovie(
+    ) = TMDBMovie(
         id = id,
         title = title,
         posterPath = posterPath,
