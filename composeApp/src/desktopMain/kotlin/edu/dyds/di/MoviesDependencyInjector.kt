@@ -39,9 +39,13 @@ object MoviesDependencyInjector {
             }
         }
 
-    private val movieRemoteDataSource = TMDBMoviesRemoteSourceImpl(tmdbHttpClient)
+    private val tmdbMoviesRemoteSource = TMDBMoviesRemoteSourceImpl(tmdbHttpClient)
     private val movieLocalDataSource = MovieLocalDataSourceImpl()
-    private val movieRepository = MovieRepositoryImpl(movieRemoteDataSource, movieRemoteDataSource, movieLocalDataSource)
+    private val movieRepository = MovieRepositoryImpl(
+        popularMoviesSource = tmdbMoviesRemoteSource,
+        detailsSource = tmdbMoviesRemoteSource,
+        movieLocalDataSource = movieLocalDataSource
+    )
     private val getMoviesUseCase: GetMoviesUseCase = GetMoviesUseCaseImpl(movieRepository)
     private val getMovieDetailUseCase: GetMovieDetailUseCase = GetMovieDetailUseCaseImpl(movieRepository)
 
