@@ -1,10 +1,10 @@
 package edu.dyds.data.remote
 
-import edu.dyds.data.remote.tmdb.TMDBMovie
+import edu.dyds.domain.entities.Movie
 
 @Suppress("unused")
 interface MovieDetailsRemoteSource {
-	suspend fun searchMovieByTitle(title: String): TMDBMovie?
+	suspend fun searchMovieByTitle(title: String): Movie?
 }
 
 

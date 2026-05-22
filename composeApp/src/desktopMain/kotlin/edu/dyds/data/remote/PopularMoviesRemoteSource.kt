@@ -1,9 +1,9 @@
 package edu.dyds.data.remote
 
-import edu.dyds.data.remote.tmdb.TMDBMovie
+import edu.dyds.domain.entities.Movie
 
 @Suppress("unused")
 interface PopularMoviesRemoteSource {
-    suspend fun getPopularMovies(): List<TMDBMovie>
+    suspend fun getPopularMovies(): List<Movie>
 }
 

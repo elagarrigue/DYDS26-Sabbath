@@ -4,7 +4,6 @@ import edu.dyds.data.local.MovieLocalDataSource
 import edu.dyds.data.remote.MovieDetailsRemoteSource
 import edu.dyds.data.remote.PopularMoviesRemoteSource
 import edu.dyds.data.remote.tmdb.TMDBMoviesRemoteSource
-import edu.dyds.data.remote.tmdb.toDomainMovie
 import edu.dyds.domain.entities.Movie
 import edu.dyds.domain.repositories.MovieRepository
 
@@ -29,9 +28,8 @@ class MovieRepositoryImpl(
         }
 
         val remote = popularMoviesSource.getPopularMovies()
-        val domainMovies = remote.map { it.toDomainMovie() }
-        movieLocalDataSource.saveMovies(domainMovies)
-        return domainMovies
+        movieLocalDataSource.saveMovies(remote)
+        return remote
     }
 
     override suspend fun getMovieDetailByTitle(title: String): Movie? {
@@ -41,11 +39,10 @@ class MovieRepositoryImpl(
 
         val remoteDetail = detailsSource.searchMovieByTitle(title)
         if (remoteDetail != null) {
-            val domainDetail = remoteDetail.toDomainMovie()
             val current = movieLocalDataSource.getCachedMovies().toMutableList()
-            current.add(domainDetail)
+            current.add(remoteDetail)
             movieLocalDataSource.saveMovies(current)
-            return domainDetail
+            return remoteDetail
         }
 
         return null

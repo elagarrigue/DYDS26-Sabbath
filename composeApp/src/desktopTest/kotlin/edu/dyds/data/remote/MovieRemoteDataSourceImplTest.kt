@@ -1,5 +1,6 @@
 package edu.dyds.data.remote.tmdb
 
+import edu.dyds.domain.entities.Movie
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.MockRequestHandleScope
@@ -54,21 +55,12 @@ class MovieRemoteDataSourceImplTest {
 
         assertEquals("/3/movie/popular", requestedPath)
         assertEquals(1, result.size)
-        assertEquals(
-            TMDBMovie(
-                id = 7,
-                title = "Movie 7",
-                posterPath = "/poster7.jpg",
-                backdropPath = "/backdrop7.jpg",
-                overview = "Overview 7",
-                originalLanguage = "es",
-                originalTitle = "Original 7",
-                popularity = 70.7,
-                releaseDate = "2026-07-07",
-                voteAverage = 7.7,
-            ),
-            result.single()
-        )
+        val movie = result.single()
+        assertEquals("Movie 7", movie.title)
+        assertEquals("https://image.tmdb.org/t/p/w500/poster7.jpg", movie.poster)
+        assertEquals("Overview 7", movie.overview)
+        assertEquals(70.7, movie.popularity)
+        assertEquals(7.7, movie.voteAverage)
     }
 
     @Test
@@ -107,21 +99,11 @@ class MovieRemoteDataSourceImplTest {
 
         assertEquals("/3/search/movie", requestedPath)
         assertEquals("Movie 42", requestedQuery)
-        assertEquals(
-            TMDBMovie(
-                id = 42,
-                title = "Movie 42",
-                posterPath = "/poster42.jpg",
-                backdropPath = "/backdrop42.jpg",
-                overview = "Overview 42",
-                originalLanguage = "en",
-                originalTitle = "Original 42",
-                popularity = 42.0,
-                releaseDate = "2026-04-02",
-                voteAverage = 8.4,
-            ),
-            result
-        )
+        assertEquals("Movie 42", result?.title)
+        assertEquals("https://image.tmdb.org/t/p/w500/poster42.jpg", result?.poster)
+        assertEquals("Overview 42", result?.overview)
+        assertEquals(42.0, result?.popularity)
+        assertEquals(8.4, result?.voteAverage)
     }
 
     @Test

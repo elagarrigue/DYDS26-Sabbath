@@ -2,6 +2,7 @@ package edu.dyds.data.remote.tmdb
 
 import edu.dyds.data.remote.MovieDetailsRemoteSource
 import edu.dyds.data.remote.PopularMoviesRemoteSource
+import edu.dyds.domain.entities.Movie
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -17,21 +18,21 @@ data class TMDBSearchResult(
 class TMDBMoviesRemoteSourceImpl(
 	private val httpClient: HttpClient,
 ) : TMDBMoviesRemoteSource, PopularMoviesRemoteSource, MovieDetailsRemoteSource {
-	override suspend fun getPopularMovies(): List<TMDBMovie> {
+	override suspend fun getPopularMovies(): List<Movie> {
 		val response: TMDBSearchResult = httpClient.get {
 			url { encodedPath = "/3/movie/popular" }
 		}.body()
-		return response.results
+		return response.results.map { it.toDomainMovie() }
 	}
 
-	override suspend fun searchMovieByTitle(title: String): TMDBMovie? {
+	override suspend fun searchMovieByTitle(title: String): Movie? {
 		return runCatching {
 			httpClient.get {
 				url {
 					encodedPath = "/3/search/movie"
 					parameters.append("query", title)
 				}
-			}.body<TMDBSearchResult>().results.firstOrNull()
+			}.body<TMDBSearchResult>().results.firstOrNull()?.toDomainMovie()
 		}.getOrNull()
 	}
 }
