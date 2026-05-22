@@ -27,12 +27,26 @@ class TMDBMoviesRemoteSourceImpl(
 
 	override suspend fun searchMovieByTitle(title: String): Movie? {
 		return runCatching {
-			httpClient.get {
+			val tmdb = httpClient.get {
 				url {
 					encodedPath = "/3/search/movie"
 					parameters.append("query", title)
 				}
 			}.body<TMDBSearchResult>().results.firstOrNull()?.toDomainMovie()
+			if (tmdb == null) return@runCatching null
+			// Prefix overview to indicate source when queried by title
+			Movie(
+				id = tmdb.id,
+				title = tmdb.title,
+				poster = tmdb.poster,
+				backdrop = tmdb.backdrop,
+				overview = if (tmdb.overview.isBlank()) tmdb.overview else "TMDB: ${tmdb.overview}",
+				originalLanguage = tmdb.originalLanguage,
+				originalTitle = tmdb.originalTitle,
+				popularity = tmdb.popularity,
+				releaseDate = tmdb.releaseDate,
+				voteAverage = tmdb.voteAverage,
+			)
 		}.getOrNull()
 	}
 }

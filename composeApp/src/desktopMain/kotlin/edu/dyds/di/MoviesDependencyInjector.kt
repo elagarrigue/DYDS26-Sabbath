@@ -15,8 +15,12 @@ import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
+import edu.dyds.data.remote.omdb.OMDBMoviesRemoteSourceImpl
+import edu.dyds.data.remote.MovieDetailsRemoteSourceBroker
 
 private const val API_KEY = "d18da1b5da16397619c688b0263cd281"
+// Placeholder OMDb API key - replace with a real key in production
+private const val OMDB_API_KEY = API_KEY
 
 object MoviesDependencyInjector {
 
@@ -40,10 +44,31 @@ object MoviesDependencyInjector {
         }
 
     private val tmdbMoviesRemoteSource = TMDBMoviesRemoteSourceImpl(tmdbHttpClient)
+
+    private val omdbHttpClient = HttpClient {
+        install(ContentNegotiation) {
+            json(Json { ignoreUnknownKeys = true })
+        }
+        install(HttpTimeout) {
+            requestTimeoutMillis = 5000
+        }
+    }
+
+    private val omdbMoviesRemoteSource = OMDBMoviesRemoteSourceImpl(
+        httpClient = omdbHttpClient,
+        apiKey = OMDB_API_KEY,
+    )
+
+    // Broker that delegates to TMDB and OMDb and combines results when both are available
+    private val movieDetailsBroker = MovieDetailsRemoteSourceBroker(
+        tmdbSource = tmdbMoviesRemoteSource,
+        omdbSource = omdbMoviesRemoteSource,
+    )
+
     private val movieLocalDataSource = MovieLocalDataSourceImpl()
     private val movieRepository = MovieRepositoryImpl(
         popularMoviesSource = tmdbMoviesRemoteSource,
-        detailsSource = tmdbMoviesRemoteSource,
+        detailsSource = movieDetailsBroker,
         movieLocalDataSource = movieLocalDataSource
     )
     private val getMoviesUseCase: GetMoviesUseCase = GetMoviesUseCaseImpl(movieRepository)

@@ -14,18 +14,33 @@ class OMDBMoviesRemoteSourceImpl(
 ) : MovieDetailsRemoteSource {
 
     override suspend fun searchMovieByTitle(title: String): Movie? {
+        // Use the 't' parameter to request full movie details by title (returns a single movie)
+        // The 's' (search) endpoint returns limited fields (no Plot/imdbRating), so switch to 't'.
         return runCatching {
-            val response: OMDBSearchResult = httpClient.get("https://www.omdbapi.com/") {
+            val omdb: OMDBMovie = httpClient.get("https://www.omdbapi.com/") {
                 url {
                     parameters.append("apikey", apiKey)
-                    parameters.append("s", title)
+                    parameters.append("t", title)
                     parameters.append("type", "movie")
+                    parameters.append("plot", "full")
                 }
             }.body()
 
-            // Verificar que la respuesta fue exitosa y se encontraron resultados
-            response.takeIf { it.response == "True" && it.search.isNotEmpty() }
-                ?.search?.firstOrNull()?.toDomainMovie()
+            if (omdb.title.isBlank()) return@runCatching null
+
+            val domain = omdb.toDomainMovie()
+            Movie(
+                id = domain.id,
+                title = domain.title,
+                poster = domain.poster,
+                backdrop = domain.backdrop,
+                overview = if (domain.overview.isBlank()) domain.overview else "OMDB: ${domain.overview}",
+                originalLanguage = domain.originalLanguage,
+                originalTitle = domain.originalTitle,
+                popularity = domain.popularity,
+                releaseDate = domain.releaseDate,
+                voteAverage = domain.voteAverage,
+            )
         }.getOrNull()
     }
 }

@@ -60,7 +60,7 @@ class MovieRepositoryImplTest {
         assertEquals("Movie 1", result[0].title)
         assertEquals("https://image.tmdb.org/t/p/w500/poster1.jpg", result[0].poster)
         assertEquals("https://image.tmdb.org/t/p/w780/backdrop1.jpg", result[0].backdrop)
-        assertEquals("Overview 1", result[0].overview)
+        assertEquals("TMDB: Overview 1", result[0].overview)
         assertEquals("en", result[0].originalLanguage)
         assertEquals("Original 1", result[0].originalTitle)
         assertEquals(100.5, result[0].popularity)
@@ -69,19 +69,28 @@ class MovieRepositoryImplTest {
     }
 
     @Test
-    fun `when requested detail is already cached, getMovieDetailByTitle returns cached movie`() = runTest {
+    fun `when requested detail is already cached, getMovieDetailByTitle still prefers remote detail`() = runTest {
         val cachedMovie = movie(id = 7, title = "Movie 7")
         val popularMoviesSource = FakePopularMoviesRemoteSource()
-        val detailsSource = FakeMovieDetailsRemoteSource(movieDetail = remoteMovie(id = 99))
+        val detailsSource = FakeMovieDetailsRemoteSource(
+            movieDetail = Movie(
+                id = 99,
+                title = "Movie 7",
+                poster = "poster-99",
+                overview = "TMDB: Overview 99",
+            )
+        )
         val localDataSource = FakeMovieLocalDataSource(cachedMovies = listOf(cachedMovie))
         val repository = MovieRepositoryImpl(popularMoviesSource, detailsSource, localDataSource)
 
         val result = repository.getMovieDetailByTitle("Movie 7")
 
-        assertEquals(cachedMovie, result)
-        assertEquals(0, detailsSource.searchMovieByTitleInvocationCount)
-        assertNull(detailsSource.requestedTitle)
-        assertEquals(0, localDataSource.saveInvocationCount)
+        assertEquals(1, detailsSource.searchMovieByTitleInvocationCount)
+        assertEquals("Movie 7", detailsSource.requestedTitle)
+        assertEquals(99, result?.id)
+        assertEquals("Movie 7", result?.title)
+        assertEquals("TMDB: Overview 99", result?.overview)
+        assertEquals(1, localDataSource.saveInvocationCount)
     }
 
     @Test
