@@ -1,9 +1,10 @@
 package edu.dyds.data.remote.tmdb
 
+import edu.dyds.data.remote.MovieDetailsRemoteSource
+import edu.dyds.data.remote.PopularMoviesRemoteSource
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
-import io.ktor.http.parameters
 import io.ktor.http.encodedPath
 import kotlinx.serialization.Serializable
 
@@ -15,7 +16,7 @@ data class TMDBSearchResult(
 @Suppress("unused")
 class TMDBMoviesRemoteSourceImpl(
 	private val httpClient: HttpClient,
-) : TMDBMoviesRemoteSource {
+) : TMDBMoviesRemoteSource, PopularMoviesRemoteSource, MovieDetailsRemoteSource {
 	override suspend fun getPopularMovies(): List<TMDBMovie> {
 		val response: TMDBSearchResult = httpClient.get {
 			url { encodedPath = "/3/movie/popular" }
