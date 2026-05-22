@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 
 interface MovieRemoteDataSource {
     suspend fun getPopularMovies(): List<RemoteMovie>
-    suspend fun getMovieDetail(id: Int): RemoteMovie?
+    suspend fun searchMovieByTitle(title: String): RemoteMovie?
 }
 
 @Serializable

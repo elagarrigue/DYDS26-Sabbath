@@ -2,8 +2,8 @@
 
 package edu.dyds.presentation
 
-import edu.dyds.presentation.home.HomeScreen
 import edu.dyds.presentation.detail.DetailScreen
+import edu.dyds.presentation.home.HomeScreen
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -14,12 +14,14 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import edu.dyds.di.MoviesDependencyInjector.provideDetailViewModel
 import edu.dyds.di.MoviesDependencyInjector.provideHomeViewModel
+import java.net.URLDecoder
+import java.net.URLEncoder
 
 private const val HOME = "home"
 
 private const val DETAIL = "detail"
 
-private const val MOVIE_ID = "movieId"
+private const val MOVIE_TITLE = "movieTitle"
 
 @Composable
 fun Navigation() {
@@ -36,7 +38,7 @@ private fun NavGraphBuilder.homeDestination(navController: NavHostController) {
         HomeScreen(
             viewModel = provideHomeViewModel(),
             onGoodMovieClick = {
-                navController.navigate("$DETAIL/${it.id}")
+                navController.navigate("$DETAIL/${URLEncoder.encode(it.title, Charsets.UTF_8.name())}")
             }
         )
     }
@@ -44,13 +46,17 @@ private fun NavGraphBuilder.homeDestination(navController: NavHostController) {
 
 private fun NavGraphBuilder.detailDestination(navController: NavHostController) {
     composable(
-        route = "$DETAIL/{$MOVIE_ID}",
-        arguments = listOf(navArgument(MOVIE_ID) { type = NavType.IntType })
+        route = "$DETAIL/{$MOVIE_TITLE}",
+        arguments = listOf(navArgument(MOVIE_TITLE) { type = NavType.StringType })
     ) { backstackEntry ->
-        val movieId = backstackEntry.arguments?.getInt(MOVIE_ID)
+        val movieTitle = backstackEntry.arguments?.getString(MOVIE_TITLE)
 
-        movieId?.let {
-            DetailScreen(provideDetailViewModel(), it, onBack = { navController.popBackStack() })
+        movieTitle?.let {
+            DetailScreen(
+                provideDetailViewModel(),
+                URLDecoder.decode(it, Charsets.UTF_8.name()),
+                onBack = { navController.popBackStack() }
+            )
         }
     }
 }

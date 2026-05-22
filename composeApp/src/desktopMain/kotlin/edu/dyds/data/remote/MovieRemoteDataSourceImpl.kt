@@ -22,11 +22,14 @@ class MovieRemoteDataSourceImpl(
         return response.results
     }
 
-    override suspend fun getMovieDetail(id: Int): RemoteMovie? {
+    override suspend fun searchMovieByTitle(title: String): RemoteMovie? {
         return runCatching {
             httpClient.get {
-                url { encodedPath = "/3/movie/$id" }
-            }.body<RemoteMovie>()
+                url {
+                    encodedPath = "/3/search/movie"
+                    parameters.append("query", title)
+                }
+            }.body<RemoteResult>().results.firstOrNull()
         }.getOrNull()
     }
 }

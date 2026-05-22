@@ -22,16 +22,15 @@ class MovieRepositoryImpl(
         return domainMovies
     }
 
-    override suspend fun getMovieDetail(id: Int): Movie? {
-        movieLocalDataSource.getCachedMovieDetail(id)?.let {
+    override suspend fun getMovieDetailByTitle(title: String): Movie? {
+        movieLocalDataSource.getCachedMovies().firstOrNull { it.title == title }?.let {
             return it
         }
 
-        val remoteDetail = movieRemoteDataSource.getMovieDetail(id)
+        val remoteDetail = movieRemoteDataSource.searchMovieByTitle(title)
         if (remoteDetail != null) {
             val domainDetail = remoteDetail.toDomainMovie()
             val current = movieLocalDataSource.getCachedMovies().toMutableList()
-            val index = current.indexOfFirst { it.id == domainDetail.id }
             current.add(domainDetail)
             movieLocalDataSource.saveMovies(current)
             return domainDetail
