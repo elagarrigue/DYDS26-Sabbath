@@ -11,7 +11,7 @@ import io.ktor.http.encodedPath
 class OMDBMoviesRemoteSourceImpl(
     private val httpClient: HttpClient,
     private val apiKey: String,
-) : MovieDetailsRemoteSource {
+) : OMDBMoviesExternalSource, MovieDetailsRemoteSource {
 
     override suspend fun searchMovieByTitle(title: String): Movie? {
         // Use the 't' parameter to request full movie details by title (returns a single movie)

@@ -6,7 +6,7 @@ import edu.dyds.domain.entities.Movie
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-interface TMDBMoviesRemoteSource : PopularMoviesRemoteSource, MovieDetailsRemoteSource {
+interface TMDBMoviesRemoteSource : TMDBMoviesExternalSource, PopularMoviesRemoteSource, MovieDetailsRemoteSource {
     override suspend fun getPopularMovies(): List<Movie>
     override suspend fun searchMovieByTitle(title: String): Movie?
 }

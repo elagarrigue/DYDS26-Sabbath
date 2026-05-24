@@ -13,7 +13,7 @@ class MovieDetailsRemoteSourceBroker(
         val omdbResult: Movie? = runCatching { omdbSource.searchMovieByTitle(title) }.getOrNull()
 
         return when {
-            tmdbResult != null && omdbResult != null -> combineResults(tmdbResult, omdbResult)
+            tmdbResult != null && omdbResult != null -> buildMovie(tmdbResult, omdbResult)
             tmdbResult != null -> Movie(
                 id = tmdbResult.id,
                 title = tmdbResult.title,
@@ -38,11 +38,11 @@ class MovieDetailsRemoteSourceBroker(
                 releaseDate = omdbResult.releaseDate,
                 voteAverage = omdbResult.voteAverage,
             )
-            else -> null
+            else -> emptyMovie()
         }
     }
 
-    private fun combineResults(tmdb: Movie, omdb: Movie): Movie {
+    private fun buildMovie(tmdb: Movie, omdb: Movie): Movie {
         val combinedOverview = "${prefixOverview("TMDB", tmdb.overview)}\n${prefixOverview("OMDB", omdb.overview)}"
 
         val popularity = (tmdb.popularity + omdb.popularity) / 2.0
@@ -67,6 +67,14 @@ class MovieDetailsRemoteSourceBroker(
             popularity = popularity,
             releaseDate = releaseDate,
             voteAverage = voteAverage,
+        )
+    }
+
+    private fun emptyMovie(): Movie {
+        return Movie(
+            id = 0,
+            title = "",
+            poster = "",
         )
     }
 

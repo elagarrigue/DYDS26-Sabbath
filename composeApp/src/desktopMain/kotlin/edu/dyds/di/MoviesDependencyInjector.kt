@@ -3,7 +3,7 @@ package edu.dyds.di
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import edu.dyds.data.local.MovieLocalDataSourceImpl
-import edu.dyds.data.remote.tmdb.TMDBMoviesRemoteSourceImpl
+import edu.dyds.data.external.tmdb.TMDBMoviesExternalSourceImpl
 import edu.dyds.data.repositoriesImpl.MovieRepositoryImpl
 import edu.dyds.domain.usecases.GetMovieDetailUseCase
 import edu.dyds.domain.usecases.GetMovieDetailUseCaseImpl
@@ -15,14 +15,23 @@ import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
-import edu.dyds.data.remote.omdb.OMDBMoviesRemoteSourceImpl
+import edu.dyds.data.external.omdb.OMDBMoviesExternalSourceImpl
 import edu.dyds.data.remote.MovieDetailsRemoteSourceBroker
 
-private const val API_KEY = "d18da1b5da16397619c688b0263cd281"
-// Placeholder OMDb API key - replace with a real key in production
-private const val OMDB_API_KEY = API_KEY
+private const val TMDB_API_KEY_NAME = "TMDB_API_KEY"
+private const val OMDB_API_KEY_NAME = "OMDB_API_KEY"
 
 object MoviesDependencyInjector {
+    private val tmdbApiKey = readApiKey(TMDB_API_KEY_NAME)
+    private val omdbApiKey = readApiKey(OMDB_API_KEY_NAME)
+
+    private fun readApiKey(name: String): String {
+        return System.getenv(name)
+            ?.takeIf { it.isNotBlank() }
+            ?: System.getProperty(name)
+                ?.takeIf { it.isNotBlank() }
+            ?: ""
+    }
 
     private val tmdbHttpClient =
         HttpClient {
@@ -35,7 +44,7 @@ object MoviesDependencyInjector {
                 url {
                     protocol = URLProtocol.HTTPS
                     host = "api.themoviedb.org"
-                    parameters.append("api_key", API_KEY)
+                    parameters.append("api_key", tmdbApiKey)
                 }
             }
             install(HttpTimeout) {
@@ -43,7 +52,7 @@ object MoviesDependencyInjector {
             }
         }
 
-    private val tmdbMoviesRemoteSource = TMDBMoviesRemoteSourceImpl(tmdbHttpClient)
+    private val tmdbMoviesExternalSource = TMDBMoviesExternalSourceImpl(tmdbHttpClient)
 
     private val omdbHttpClient = HttpClient {
         install(ContentNegotiation) {
@@ -54,20 +63,20 @@ object MoviesDependencyInjector {
         }
     }
 
-    private val omdbMoviesRemoteSource = OMDBMoviesRemoteSourceImpl(
+    private val omdbMoviesExternalSource = OMDBMoviesExternalSourceImpl(
         httpClient = omdbHttpClient,
-        apiKey = OMDB_API_KEY,
+        apiKey = omdbApiKey,
     )
 
     // Broker that delegates to TMDB and OMDb and combines results when both are available
     private val movieDetailsBroker = MovieDetailsRemoteSourceBroker(
-        tmdbSource = tmdbMoviesRemoteSource,
-        omdbSource = omdbMoviesRemoteSource,
+        tmdbSource = tmdbMoviesExternalSource,
+        omdbSource = omdbMoviesExternalSource,
     )
 
     private val movieLocalDataSource = MovieLocalDataSourceImpl()
     private val movieRepository = MovieRepositoryImpl(
-        popularMoviesSource = tmdbMoviesRemoteSource,
+        popularMoviesSource = tmdbMoviesExternalSource,
         detailsSource = movieDetailsBroker,
         movieLocalDataSource = movieLocalDataSource
     )
