@@ -1,4 +1,4 @@
-package edu.dyds.data.remote.omdb
+package edu.dyds.data.external.omdb
 
 import edu.dyds.domain.entities.Movie
 import kotlinx.serialization.SerialName
@@ -43,4 +43,3 @@ fun OMDBMovie.toDomainMovie(): Movie {
         releaseDate = year,
     )
 }
-

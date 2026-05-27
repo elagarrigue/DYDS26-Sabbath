@@ -1,5 +1,6 @@
 package edu.dyds.data.remote.omdb
 
+import edu.dyds.data.external.omdb.OMDBMovie
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
