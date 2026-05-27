@@ -1,5 +1,6 @@
 package edu.dyds.data.remote.tmdb
 
+import edu.dyds.data.external.tmdb.TMDBMoviesExternalSourceImpl
 import edu.dyds.domain.entities.Movie
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
@@ -49,7 +50,7 @@ class MovieRemoteDataSourceImplTest {
                 headers = jsonHeaders,
             )
         }
-        val dataSource = TMDBMoviesRemoteSourceImpl(httpClient)
+        val dataSource = TMDBMoviesExternalSourceImpl(httpClient)
 
         val result = dataSource.getPopularMovies()
 
@@ -93,7 +94,7 @@ class MovieRemoteDataSourceImplTest {
                 headers = jsonHeaders,
             )
         }
-        val dataSource = TMDBMoviesRemoteSourceImpl(httpClient)
+        val dataSource = TMDBMoviesExternalSourceImpl(httpClient)
 
         val result = dataSource.searchMovieByTitle("Movie 42")
 
@@ -111,7 +112,7 @@ class MovieRemoteDataSourceImplTest {
         val httpClient = testHttpClient {
             error("network failure")
         }
-        val dataSource = TMDBMoviesRemoteSourceImpl(httpClient)
+        val dataSource = TMDBMoviesExternalSourceImpl(httpClient)
 
         val result = dataSource.searchMovieByTitle("Movie 42")
 

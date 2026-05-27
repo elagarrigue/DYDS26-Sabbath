@@ -1,11 +1,12 @@
 package edu.dyds.data.remote
 
+import edu.dyds.data.external.MovieDetailsExternalSource
 import edu.dyds.domain.entities.Movie
 
 @Suppress("unused")
 class MovieDetailsRemoteSourceBroker(
-    private val tmdbSource: MovieDetailsRemoteSource,
-    private val omdbSource: MovieDetailsRemoteSource,
+    private val tmdbSource: MovieDetailsExternalSource,
+    private val omdbSource: MovieDetailsExternalSource,
 ) : MovieDetailsRemoteSource {
 
     override suspend fun searchMovieByTitle(title: String): Movie? {

@@ -3,8 +3,8 @@ package edu.dyds.data.repositoriesImpl
 import edu.dyds.data.fakes.FakeMovieLocalDataSource
 import edu.dyds.data.fakes.FakePopularMoviesRemoteSource
 import edu.dyds.data.fakes.FakeMovieDetailsRemoteSource
-import edu.dyds.data.remote.tmdb.TMDBMovie
-import edu.dyds.data.remote.tmdb.toDomainMovie
+import edu.dyds.data.external.tmdb.TMDBMovie
+import edu.dyds.data.external.tmdb.toDomainMovie
 import edu.dyds.domain.entities.Movie
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test

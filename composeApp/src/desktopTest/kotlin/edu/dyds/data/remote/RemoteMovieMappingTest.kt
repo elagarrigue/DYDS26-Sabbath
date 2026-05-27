@@ -1,5 +1,7 @@
 package edu.dyds.data.remote.tmdb
 
+import edu.dyds.data.external.tmdb.TMDBMovie
+import edu.dyds.data.external.tmdb.toDomainMovie
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull

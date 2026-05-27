@@ -4,6 +4,7 @@ import edu.dyds.data.local.MovieLocalDataSource
 import edu.dyds.data.external.tmdb.TMDBMoviesExternalSource
 import edu.dyds.data.remote.MovieDetailsRemoteSource
 import edu.dyds.data.remote.PopularMoviesRemoteSource
+import edu.dyds.data.external.PopularMoviesExternalSource
 import edu.dyds.domain.entities.Movie
 import edu.dyds.domain.repositories.MovieRepository
 
@@ -12,12 +13,13 @@ class MovieRepositoryImpl(
     private val detailsSource: MovieDetailsRemoteSource,
     private val movieLocalDataSource: MovieLocalDataSource,
 ) : MovieRepository {
+    @Suppress("unused")
     constructor(
         movieExternalDataSource: TMDBMoviesExternalSource,
         movieLocalDataSource: MovieLocalDataSource,
     ) : this(
-        popularMoviesSource = movieExternalDataSource,
-        detailsSource = movieExternalDataSource,
+        popularMoviesSource = movieExternalDataSource as PopularMoviesRemoteSource,
+        detailsSource = movieExternalDataSource as MovieDetailsRemoteSource,
         movieLocalDataSource = movieLocalDataSource,
     )
 
