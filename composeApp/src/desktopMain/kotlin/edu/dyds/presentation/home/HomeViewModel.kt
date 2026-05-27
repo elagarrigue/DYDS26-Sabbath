@@ -19,21 +19,31 @@ class HomeViewModel(
 
     fun getAllMovies() {
         viewModelScope.launch {
-            moviesStateMutableStateFlow.emit(
-                MoviesUiState(isLoading = true)
-            )
-            moviesStateMutableStateFlow.emit(
-                MoviesUiState(
-                    isLoading = false,
-                    movies = getMoviesUseCase()
+            try {
+                moviesStateMutableStateFlow.emit(
+                    MoviesUiState(isLoading = true)
                 )
-            )
+                moviesStateMutableStateFlow.emit(
+                    MoviesUiState(
+                        isLoading = false,
+                        movies = getMoviesUseCase()
+                    )
+                )
+            } catch (e: Throwable) {
+                moviesStateMutableStateFlow.emit(
+                    MoviesUiState(
+                        isLoading = false,
+                        errorMessage = e.message ?: "Failed to load movies"
+                    )
+                )
+            }
         }
     }
 
     data class MoviesUiState(
         val isLoading: Boolean = false,
         val movies: List<QualifiedMovie> = emptyList(),
+        val errorMessage: String? = null,
     )
 }
 

@@ -18,12 +18,14 @@ import kotlinx.serialization.json.Json
 import edu.dyds.data.external.omdb.OMDBMoviesExternalSourceImpl
 import edu.dyds.data.remote.MovieDetailsRemoteSourceBroker
 import edu.dyds.data.remote.tmdb.TMDBMoviesRemoteSourceImpl
-import edu.dyds.data.remote.omdb.OMDBMoviesRemoteSourceImpl
+import java.io.File
+import java.util.Properties
 
 private const val TMDB_API_KEY_NAME = "TMDB_API_KEY"
 private const val OMDB_API_KEY_NAME = "OMDB_API_KEY"
 
 object MoviesDependencyInjector {
+    private val localProperties: Properties by lazy { loadLocalProperties() }
     private val tmdbApiKey = readApiKey(TMDB_API_KEY_NAME)
     private val omdbApiKey = readApiKey(OMDB_API_KEY_NAME)
 
@@ -32,7 +34,20 @@ object MoviesDependencyInjector {
             ?.takeIf { it.isNotBlank() }
             ?: System.getProperty(name)
                 ?.takeIf { it.isNotBlank() }
+            ?: localProperties.getProperty(name)
+                ?.takeIf { it.isNotBlank() }
             ?: ""
+    }
+
+    private fun loadLocalProperties(): Properties {
+        val properties = Properties()
+        val candidates = listOf(
+            File("local.properties"),
+            File("../local.properties"),
+        )
+        val file = candidates.firstOrNull { it.exists() && it.isFile } ?: return properties
+        file.inputStream().use { properties.load(it) }
+        return properties
     }
 
     private val tmdbHttpClient =
@@ -69,11 +84,6 @@ object MoviesDependencyInjector {
     }
 
     private val omdbMoviesExternalSource = OMDBMoviesExternalSourceImpl(
-        httpClient = omdbHttpClient,
-        apiKey = omdbApiKey,
-    )
-
-    private val omdbMoviesRemoteSource = OMDBMoviesRemoteSourceImpl(
         httpClient = omdbHttpClient,
         apiKey = omdbApiKey,
     )

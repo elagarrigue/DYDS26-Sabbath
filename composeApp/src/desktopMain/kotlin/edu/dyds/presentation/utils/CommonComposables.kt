@@ -26,6 +26,7 @@ fun LoadingIndicator(enabled: Boolean, modifier: Modifier = Modifier) {
 
 @Composable
 fun NoResults(
+    message: String = "No Results",
     onRetry: () -> Unit
 ) {
     Column(
@@ -36,7 +37,7 @@ fun NoResults(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "No Results",
+            text = message,
             style = MaterialTheme.typography.bodyLarge
         )
         Spacer(modifier = Modifier.height(16.dp))

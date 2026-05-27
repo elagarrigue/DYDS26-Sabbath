@@ -11,6 +11,9 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class TMDBSearchResult(
 	val results: List<TMDBMovie> = emptyList(),
+    @SerialName("status_code") val statusCode: Int? = null,
+    @SerialName("status_message") val statusMessage: String? = null,
+    val success: Boolean? = null,
 )
 
 @Serializable
@@ -50,6 +53,11 @@ class TMDBMoviesExternalSourceImpl(
 		val response: TMDBSearchResult = httpClient.get {
 			url { encodedPath = "/3/movie/popular" }
 		}.body()
+        if (response.statusCode != null) {
+            throw IllegalStateException(
+                response.statusMessage ?: "TMDB request failed with status_code=${response.statusCode}"
+            )
+        }
 		return response.results.map { it.toDomainMovie() }
 	}
 
@@ -60,7 +68,14 @@ class TMDBMoviesExternalSourceImpl(
 					encodedPath = "/3/search/movie"
 					parameters.append("query", title)
 				}
-			}.body<TMDBSearchResult>().results.firstOrNull()?.toDomainMovie()
+			}.body<TMDBSearchResult>().let { response ->
+                if (response.statusCode != null) {
+                    throw IllegalStateException(
+                        response.statusMessage ?: "TMDB request failed with status_code=${response.statusCode}"
+                    )
+                }
+                response.results.firstOrNull()?.toDomainMovie()
+            }
 			if (tmdb == null) return@runCatching null
 			// Prefix overview to indicate source when queried by title
 			Movie(
