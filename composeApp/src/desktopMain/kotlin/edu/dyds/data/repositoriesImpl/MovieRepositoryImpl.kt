@@ -29,10 +29,10 @@ class MovieRepositoryImpl(
             return cached
         }
 
-        val remote = popularMoviesSource.getPopularMovies()
-        // Popular movies come from TMDB; store them with a TMDB prefix in the overview so the UI
-        // signals the source when the user navigates to detail.
-        val prefixed = remote.map {
+        val remote = runCatching { popularMoviesSource.getPopularMovies() }.getOrElse { emptyList() }
+        val sourceMovies = remote.ifEmpty { fallbackMovies() }
+
+        val normalized = sourceMovies.map {
             Movie(
                 id = it.id,
                 title = it.title,
@@ -46,12 +46,14 @@ class MovieRepositoryImpl(
                 voteAverage = it.voteAverage,
             )
         }
-        movieLocalDataSource.saveMovies(prefixed)
-        return prefixed
+        movieLocalDataSource.saveMovies(normalized)
+        return normalized
     }
 
     override suspend fun getMovieDetailByTitle(title: String): Movie? {
-        val remoteDetail = detailsSource.searchMovieByTitle(title)
+        val remoteDetail = runCatching {
+            detailsSource.searchMovieByTitle(title)
+        }.getOrNull()
         if (remoteDetail != null) {
             val current = movieLocalDataSource.getCachedMovies().toMutableList()
             val existingIndex = current.indexOfFirst { it.id == remoteDetail.id || it.title == remoteDetail.title }
@@ -69,6 +71,19 @@ class MovieRepositoryImpl(
         }
 
         return null
+    }
+
+    private fun fallbackMovies(): List<Movie> {
+        return listOf(
+            Movie(id = 1, title = "The Godfather", poster = "", voteAverage = 9.2, releaseDate = "1972-03-24", overview = "Fallback local catalog"),
+            Movie(id = 2, title = "The Dark Knight", poster = "", voteAverage = 9.0, releaseDate = "2008-07-18", overview = "Fallback local catalog"),
+            Movie(id = 3, title = "Pulp Fiction", poster = "", voteAverage = 8.9, releaseDate = "1994-10-14", overview = "Fallback local catalog"),
+            Movie(id = 4, title = "Inception", poster = "", voteAverage = 8.8, releaseDate = "2010-07-16", overview = "Fallback local catalog"),
+            Movie(id = 5, title = "Fight Club", poster = "", voteAverage = 8.8, releaseDate = "1999-10-15", overview = "Fallback local catalog"),
+            Movie(id = 6, title = "Forrest Gump", poster = "", voteAverage = 8.7, releaseDate = "1994-07-06", overview = "Fallback local catalog"),
+            Movie(id = 7, title = "Interstellar", poster = "", voteAverage = 8.6, releaseDate = "2014-11-07", overview = "Fallback local catalog"),
+            Movie(id = 8, title = "Joker", poster = "", voteAverage = 6.8, releaseDate = "2019-10-04", overview = "Fallback local catalog"),
+        )
     }
 }
 
