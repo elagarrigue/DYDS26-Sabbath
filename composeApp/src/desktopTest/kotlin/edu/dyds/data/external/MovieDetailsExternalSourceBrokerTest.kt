@@ -1,11 +1,11 @@
-package edu.dyds.data.remote
+package edu.dyds.data.external
 
 import edu.dyds.domain.entities.Movie
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class MovieDetailsRemoteSourceBrokerTest {
+class MovieDetailsExternalSourceBrokerTest {
 
     @Test
     fun `when both sources return a movie, broker combines overview popularity and vote average`() = runTest {
@@ -27,7 +27,7 @@ class MovieDetailsRemoteSourceBrokerTest {
                 voteAverage = 9.0,
             )
         )
-        val broker = MovieDetailsRemoteSourceBroker(tmdbSource, omdbSource)
+        val broker = MovieDetailsExternalSourceBroker(tmdbSource, omdbSource)
 
         val result = broker.searchMovieByTitle("Movie 1")
 
@@ -46,7 +46,7 @@ class MovieDetailsRemoteSourceBrokerTest {
     fun `when only TMDB returns a movie, broker prefixes overview with TMDB`() = runTest {
         val tmdbSource = FakeDetailsSource(movie = movie(id = 1, title = "Movie 1", overview = "TMDB overview"))
         val omdbSource = FakeDetailsSource(movie = null)
-        val broker = MovieDetailsRemoteSourceBroker(tmdbSource, omdbSource)
+        val broker = MovieDetailsExternalSourceBroker(tmdbSource, omdbSource)
 
         val result = broker.searchMovieByTitle("Movie 1")
 
@@ -59,7 +59,7 @@ class MovieDetailsRemoteSourceBrokerTest {
     fun `when only OMDB returns a movie, broker prefixes overview with OMDB`() = runTest {
         val tmdbSource = FakeDetailsSource(movie = null)
         val omdbSource = FakeDetailsSource(movie = movie(id = 2, title = "Movie 1", overview = "OMDB overview"))
-        val broker = MovieDetailsRemoteSourceBroker(tmdbSource, omdbSource)
+        val broker = MovieDetailsExternalSourceBroker(tmdbSource, omdbSource)
 
         val result = broker.searchMovieByTitle("Movie 1")
 
@@ -72,7 +72,7 @@ class MovieDetailsRemoteSourceBrokerTest {
     fun `when neither source returns a movie, broker returns an empty movie`() = runTest {
         val tmdbSource = FakeDetailsSource(movie = null)
         val omdbSource = FakeDetailsSource(movie = null)
-        val broker = MovieDetailsRemoteSourceBroker(tmdbSource, omdbSource)
+        val broker = MovieDetailsExternalSourceBroker(tmdbSource, omdbSource)
 
         val result = broker.searchMovieByTitle("Movie 1")
 
@@ -88,7 +88,7 @@ class MovieDetailsRemoteSourceBrokerTest {
     fun `when TMDB fails but OMDB returns a movie, broker falls back to OMDB`() = runTest {
         val tmdbSource = ThrowingDetailsSource()
         val omdbSource = FakeDetailsSource(movie = movie(id = 2, title = "Movie 1", overview = "OMDB overview"))
-        val broker = MovieDetailsRemoteSourceBroker(tmdbSource, omdbSource)
+        val broker = MovieDetailsExternalSourceBroker(tmdbSource, omdbSource)
 
         val result = broker.searchMovieByTitle("Movie 1")
 
@@ -101,7 +101,7 @@ class MovieDetailsRemoteSourceBrokerTest {
     fun `when OMDB fails but TMDB returns a movie, broker falls back to TMDB`() = runTest {
         val tmdbSource = FakeDetailsSource(movie = movie(id = 1, title = "Movie 1", overview = "TMDB overview"))
         val omdbSource = ThrowingDetailsSource()
-        val broker = MovieDetailsRemoteSourceBroker(tmdbSource, omdbSource)
+        val broker = MovieDetailsExternalSourceBroker(tmdbSource, omdbSource)
 
         val result = broker.searchMovieByTitle("Movie 1")
 
@@ -131,7 +131,7 @@ class MovieDetailsRemoteSourceBrokerTest {
 
     private class FakeDetailsSource(
         private val movie: Movie?,
-    ) : MovieDetailsRemoteSource {
+    ) : MovieDetailsExternalSource {
         var invocationCount: Int = 0
         var requestedTitle: String? = null
 
@@ -142,7 +142,7 @@ class MovieDetailsRemoteSourceBrokerTest {
         }
     }
 
-    private class ThrowingDetailsSource : MovieDetailsRemoteSource {
+    private class ThrowingDetailsSource : MovieDetailsExternalSource {
         var invocationCount: Int = 0
 
         override suspend fun searchMovieByTitle(title: String): Movie? {
@@ -151,4 +151,5 @@ class MovieDetailsRemoteSourceBrokerTest {
         }
     }
 }
+
 

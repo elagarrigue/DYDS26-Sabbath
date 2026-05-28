@@ -1,4 +1,4 @@
-package edu.dyds.data.remote.tmdb
+package edu.dyds.data.external.tmdb
 
 import edu.dyds.data.external.tmdb.TMDBMovie
 import edu.dyds.data.external.tmdb.toDomainMovie
@@ -52,3 +52,5 @@ class RemoteMovieMappingTest {
         assertNull(result.backdrop)
     }
 }
+
+

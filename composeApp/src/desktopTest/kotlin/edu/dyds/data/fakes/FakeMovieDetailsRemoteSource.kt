@@ -1,11 +1,11 @@
 package edu.dyds.data.fakes
 
-import edu.dyds.data.remote.MovieDetailsRemoteSource
+import edu.dyds.data.external.MovieDetailsExternalSource
 import edu.dyds.domain.entities.Movie
 
 class FakeMovieDetailsRemoteSource(
     private val movieDetail: Movie? = null,
-) : MovieDetailsRemoteSource {
+) : MovieDetailsExternalSource {
 
     var searchMovieByTitleInvocationCount: Int = 0
     var requestedTitle: String? = null

@@ -2,15 +2,14 @@ package edu.dyds.data.repositoriesImpl
 
 import edu.dyds.data.local.MovieLocalDataSource
 import edu.dyds.data.external.tmdb.TMDBMoviesExternalSource
-import edu.dyds.data.remote.MovieDetailsRemoteSource
-import edu.dyds.data.remote.PopularMoviesRemoteSource
+import edu.dyds.data.external.MovieDetailsExternalSource
 import edu.dyds.data.external.PopularMoviesExternalSource
 import edu.dyds.domain.entities.Movie
 import edu.dyds.domain.repositories.MovieRepository
 
 class MovieRepositoryImpl(
-    private val popularMoviesSource: PopularMoviesRemoteSource,
-    private val detailsSource: MovieDetailsRemoteSource,
+    private val popularMoviesSource: PopularMoviesExternalSource,
+    private val detailsSource: MovieDetailsExternalSource,
     private val movieLocalDataSource: MovieLocalDataSource,
 ) : MovieRepository {
     @Suppress("unused")
@@ -18,8 +17,8 @@ class MovieRepositoryImpl(
         movieExternalDataSource: TMDBMoviesExternalSource,
         movieLocalDataSource: MovieLocalDataSource,
     ) : this(
-        popularMoviesSource = movieExternalDataSource as PopularMoviesRemoteSource,
-        detailsSource = movieExternalDataSource as MovieDetailsRemoteSource,
+        popularMoviesSource = movieExternalDataSource as PopularMoviesExternalSource,
+        detailsSource = movieExternalDataSource as MovieDetailsExternalSource,
         movieLocalDataSource = movieLocalDataSource,
     )
 

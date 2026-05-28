@@ -1,11 +1,11 @@
 package edu.dyds.data.fakes
 
-import edu.dyds.data.remote.PopularMoviesRemoteSource
+import edu.dyds.data.external.PopularMoviesExternalSource
 import edu.dyds.domain.entities.Movie
 
 class FakePopularMoviesRemoteSource(
     private val popularMovies: List<Movie> = emptyList(),
-) : PopularMoviesRemoteSource {
+) : PopularMoviesExternalSource {
 
     var getPopularMoviesInvocationCount: Int = 0
 

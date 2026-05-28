@@ -16,8 +16,7 @@ import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 import edu.dyds.data.external.omdb.OMDBMoviesExternalSourceImpl
-import edu.dyds.data.remote.MovieDetailsRemoteSourceBroker
-import edu.dyds.data.remote.tmdb.TMDBMoviesRemoteSourceImpl
+import edu.dyds.data.external.MovieDetailsExternalSourceBroker
 import java.io.File
 import java.util.Properties
 
@@ -71,9 +70,6 @@ object MoviesDependencyInjector {
 
     private val tmdbMoviesExternalSource = TMDBMoviesExternalSourceImpl(tmdbHttpClient)
 
-    // Create a RemoteSource adapter for TMDB
-    private val tmdbMoviesRemoteSource = TMDBMoviesRemoteSourceImpl(tmdbHttpClient)
-
     private val omdbHttpClient = HttpClient {
         install(ContentNegotiation) {
             json(Json { ignoreUnknownKeys = true })
@@ -89,14 +85,14 @@ object MoviesDependencyInjector {
     )
 
     // Broker that delegates to TMDB and OMDb and combines results when both are available
-    private val movieDetailsBroker = MovieDetailsRemoteSourceBroker(
+    private val movieDetailsBroker = MovieDetailsExternalSourceBroker(
         tmdbSource = tmdbMoviesExternalSource,
         omdbSource = omdbMoviesExternalSource,
     )
 
     private val movieLocalDataSource = MovieLocalDataSourceImpl()
     private val movieRepository = MovieRepositoryImpl(
-        popularMoviesSource = tmdbMoviesRemoteSource,
+        popularMoviesSource = tmdbMoviesExternalSource,
         detailsSource = movieDetailsBroker,
         movieLocalDataSource = movieLocalDataSource
     )

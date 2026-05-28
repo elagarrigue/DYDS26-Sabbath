@@ -1,13 +1,12 @@
-package edu.dyds.data.remote
+package edu.dyds.data.external
 
-import edu.dyds.data.external.MovieDetailsExternalSource
 import edu.dyds.domain.entities.Movie
 
 @Suppress("unused")
-class MovieDetailsRemoteSourceBroker(
+class MovieDetailsExternalSourceBroker(
     private val tmdbSource: MovieDetailsExternalSource,
     private val omdbSource: MovieDetailsExternalSource,
-) : MovieDetailsRemoteSource {
+) : MovieDetailsExternalSource {
 
     override suspend fun searchMovieByTitle(title: String): Movie? {
         val tmdbResult: Movie? = runCatching { tmdbSource.searchMovieByTitle(title) }.getOrNull()
@@ -87,6 +86,5 @@ class MovieDetailsRemoteSourceBroker(
         return if (normalized.isBlank()) normalized else "$source: $normalized"
     }
 }
-
 
 

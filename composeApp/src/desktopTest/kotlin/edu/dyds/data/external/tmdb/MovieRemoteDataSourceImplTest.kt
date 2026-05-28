@@ -1,4 +1,4 @@
-package edu.dyds.data.remote.tmdb
+package edu.dyds.data.external.tmdb
 
 import edu.dyds.data.external.tmdb.TMDBMoviesExternalSourceImpl
 import edu.dyds.domain.entities.Movie
@@ -133,3 +133,5 @@ class MovieRemoteDataSourceImplTest {
         val jsonHeaders = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString())
     }
 }
+
+
