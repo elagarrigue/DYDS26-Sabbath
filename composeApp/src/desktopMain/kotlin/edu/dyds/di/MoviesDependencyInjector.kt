@@ -17,37 +17,11 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 import edu.dyds.data.external.omdb.OMDBMoviesExternalSourceImpl
 import edu.dyds.data.external.MovieDetailsExternalSourceBroker
-import java.io.File
-import java.util.Properties
 
-private const val TMDB_API_KEY_NAME = "TMDB_API_KEY"
-private const val OMDB_API_KEY_NAME = "OMDB_API_KEY"
+private const val TMDB_API_KEY = "d18da1b5da16397619c688b0263cd281"
+private const val OMDB_API_KEY = "a96e7f78"
 
 object MoviesDependencyInjector {
-    private val localProperties: Properties by lazy { loadLocalProperties() }
-    private val tmdbApiKey = readApiKey(TMDB_API_KEY_NAME)
-    private val omdbApiKey = readApiKey(OMDB_API_KEY_NAME)
-
-    private fun readApiKey(name: String): String {
-        return System.getenv(name)
-            ?.takeIf { it.isNotBlank() }
-            ?: System.getProperty(name)
-                ?.takeIf { it.isNotBlank() }
-            ?: localProperties.getProperty(name)
-                ?.takeIf { it.isNotBlank() }
-            ?: ""
-    }
-
-    private fun loadLocalProperties(): Properties {
-        val properties = Properties()
-        val candidates = listOf(
-            File("local.properties"),
-            File("../local.properties"),
-        )
-        val file = candidates.firstOrNull { it.exists() && it.isFile } ?: return properties
-        file.inputStream().use { properties.load(it) }
-        return properties
-    }
 
     private val tmdbHttpClient =
         HttpClient {
@@ -60,11 +34,11 @@ object MoviesDependencyInjector {
                 url {
                     protocol = URLProtocol.HTTPS
                     host = "api.themoviedb.org"
-                    parameters.append("api_key", tmdbApiKey)
+                    parameters.append("api_key", TMDB_API_KEY)
                 }
             }
             install(HttpTimeout) {
-                requestTimeoutMillis = 5000
+                requestTimeoutMillis = 15000
             }
         }
 
@@ -75,13 +49,13 @@ object MoviesDependencyInjector {
             json(Json { ignoreUnknownKeys = true })
         }
         install(HttpTimeout) {
-            requestTimeoutMillis = 5000
+            requestTimeoutMillis = 15000
         }
     }
 
     private val omdbMoviesExternalSource = OMDBMoviesExternalSourceImpl(
         httpClient = omdbHttpClient,
-        apiKey = omdbApiKey,
+        apiKey = OMDB_API_KEY,
     )
 
     // Broker that delegates to TMDB and OMDb and combines results when both are available
