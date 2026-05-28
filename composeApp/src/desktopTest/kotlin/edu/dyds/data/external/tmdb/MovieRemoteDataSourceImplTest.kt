@@ -1,19 +1,10 @@
 package edu.dyds.data.external.tmdb
 
-import edu.dyds.data.external.tmdb.TMDBMoviesExternalSourceImpl
-import edu.dyds.domain.entities.Movie
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.mock.MockEngine
-import io.ktor.client.engine.mock.MockRequestHandleScope
+import edu.dyds.data.external.testhelpers.TestHttpClientHelper
 import io.ktor.client.engine.mock.respond
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.request.HttpRequestData
-import io.ktor.client.request.HttpResponseData
-import io.ktor.http.ContentType
-import io.ktor.http.HttpHeaders
+import edu.dyds.data.external.tmdb.TMDBMoviesExternalSourceImpl
+import io.ktor.client.HttpClient
 import io.ktor.http.HttpStatusCode
-import io.ktor.http.headersOf
-import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
@@ -25,7 +16,7 @@ class MovieRemoteDataSourceImplTest {
     @Test
     fun `when popular movies are requested, getPopularMovies returns parsed results`() = runTest {
         var requestedPath: String? = null
-        val httpClient = testHttpClient { request ->
+        val httpClient = TestHttpClientHelper.testHttpClient { request ->
             requestedPath = request.url.encodedPath
             respond(
                 content = """
@@ -47,7 +38,7 @@ class MovieRemoteDataSourceImplTest {
                     }
                 """.trimIndent(),
                 status = HttpStatusCode.OK,
-                headers = jsonHeaders,
+                headers = TestHttpClientHelper.jsonHeaders,
             )
         }
         val dataSource = TMDBMoviesExternalSourceImpl(httpClient)
@@ -68,7 +59,7 @@ class MovieRemoteDataSourceImplTest {
     fun `when a title is searched and the call succeeds, searchMovieByTitle returns the first parsed movie`() = runTest {
         var requestedPath: String? = null
         var requestedQuery: String? = null
-        val httpClient = testHttpClient { request ->
+        val httpClient = TestHttpClientHelper.testHttpClient { request ->
             requestedPath = request.url.encodedPath
             requestedQuery = request.url.parameters["query"]
             respond(
@@ -91,7 +82,7 @@ class MovieRemoteDataSourceImplTest {
                     }
                 """.trimIndent(),
                 status = HttpStatusCode.OK,
-                headers = jsonHeaders,
+                headers = TestHttpClientHelper.jsonHeaders,
             )
         }
         val dataSource = TMDBMoviesExternalSourceImpl(httpClient)
@@ -109,7 +100,7 @@ class MovieRemoteDataSourceImplTest {
 
     @Test
     fun `when the search request fails, searchMovieByTitle returns null`() = runTest {
-        val httpClient = testHttpClient {
+        val httpClient = TestHttpClientHelper.testHttpClient {
             error("network failure")
         }
         val dataSource = TMDBMoviesExternalSourceImpl(httpClient)
@@ -119,19 +110,7 @@ class MovieRemoteDataSourceImplTest {
         assertNull(result)
     }
 
-    private fun testHttpClient(
-        handler: suspend MockRequestHandleScope.(request: HttpRequestData) -> HttpResponseData,
-    ): HttpClient {
-        return HttpClient(MockEngine { request -> handler(request) }) {
-            install(ContentNegotiation) {
-                json(Json { ignoreUnknownKeys = true })
-            }
-        }
-    }
-
-    private companion object {
-        val jsonHeaders = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-    }
+    // Use TestHttpClientHelper for HttpClient(MockEngine) construction and jsonHeaders
 }
 
 
