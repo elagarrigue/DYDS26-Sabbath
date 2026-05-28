@@ -8,6 +8,16 @@ import io.ktor.http.encodedPath
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+private const val OMDB_API_BASE_URL = "https://www.omdbapi.com/"
+private const val OMDB_OVERVIEW_PREFIX = "OMDB: "
+private const val OMDB_NA_VALUE = "N/A"
+private const val OMDB_PARAM_API_KEY = "apikey"
+private const val OMDB_PARAM_TITLE = "t"
+private const val OMDB_PARAM_TYPE = "type"
+private const val OMDB_PARAM_PLOT = "plot"
+private const val OMDB_PARAM_TYPE_MOVIE = "movie"
+private const val OMDB_PARAM_PLOT_FULL = "full"
+
 @Serializable
 data class OMDBMovie(
     @SerialName("imdbID")
@@ -28,25 +38,28 @@ data class OMDBMovie(
     val type: String = "",
 )
 
+/**
+ * Converts OMDB DTO to domain Movie entity.
+ * Handles special values like "N/A" and converts rating string to double.
+ */
 fun OMDBMovie.toDomainMovie(): Movie {
+    val rating = parseImdbRating(imdbRating)
     return Movie(
         id = imdbId.hashCode(),
         title = title,
-        poster = if (poster != "N/A") poster else "",
-        overview = plot.takeIf { it != "N/A" } ?: "",
-        popularity = try {
-            imdbRating.toDoubleOrNull() ?: 0.0
-        } catch (e: Exception) {
-            0.0
-        },
-        voteAverage = try {
-            imdbRating.toDoubleOrNull() ?: 0.0
-        } catch (e: Exception) {
-            0.0
-        },
+        poster = parseOmdbValue(poster),
+        overview = parseOmdbValue(plot),
+        popularity = rating,
+        voteAverage = rating,
         releaseDate = year,
     )
 }
+
+private fun parseOmdbValue(value: String): String =
+    if (value == OMDB_NA_VALUE) "" else value
+
+private fun parseImdbRating(rating: String): Double =
+    rating.toDoubleOrNull() ?: 0.0
 
 @Suppress("unused")
 class OMDBMoviesExternalSourceImpl(
@@ -54,35 +67,44 @@ class OMDBMoviesExternalSourceImpl(
     private val apiKey: String,
 ) : OMDBMoviesExternalSource {
 
+    /**
+     * Searches for a movie by title via OMDB API.
+     * Returns null if the title is not found or the request fails.
+     */
     override suspend fun searchMovieByTitle(title: String): Movie? {
-        // Use the 't' parameter to request full movie details by title (returns a single movie)
-        // The 's' (search) endpoint returns limited fields (no Plot/imdbRating), so switch to 't'.
+        // Use 't' parameter for exact title match (returns full movie details including Plot and Rating)
+        // Avoids 's' parameter which returns limited search results
         return runCatching {
-            val omdb: OMDBMovie = httpClient.get("https://www.omdbapi.com/") {
+            val omdb: OMDBMovie = httpClient.get(OMDB_API_BASE_URL) {
                 url {
-                    parameters.append("apikey", apiKey)
-                    parameters.append("t", title)
-                    parameters.append("type", "movie")
-                    parameters.append("plot", "full")
+                    parameters.append(OMDB_PARAM_API_KEY, apiKey)
+                    parameters.append(OMDB_PARAM_TITLE, title)
+                    parameters.append(OMDB_PARAM_TYPE, OMDB_PARAM_TYPE_MOVIE)
+                    parameters.append(OMDB_PARAM_PLOT, OMDB_PARAM_PLOT_FULL)
                 }
             }.body()
 
             if (omdb.title.isBlank()) return@runCatching null
 
-            val domain = omdb.toDomainMovie()
-            Movie(
-                id = domain.id,
-                title = domain.title,
-                poster = domain.poster,
-                backdrop = domain.backdrop,
-                overview = if (domain.overview.isBlank()) domain.overview else "OMDB: ${domain.overview}",
-                originalLanguage = domain.originalLanguage,
-                originalTitle = domain.originalTitle,
-                popularity = domain.popularity,
-                releaseDate = domain.releaseDate,
-                voteAverage = domain.voteAverage,
-            )
+            omdb.toDomainMovie().addSourcePrefix()
         }.getOrNull()
+    }
+
+    /** Adds the OMDB source prefix to the overview for clarity. */
+    private fun Movie.addSourcePrefix(): Movie {
+        val prefixedOverview = if (overview.isBlank()) overview else "$OMDB_OVERVIEW_PREFIX$overview"
+        return Movie(
+            id = id,
+            title = title,
+            poster = poster,
+            backdrop = backdrop,
+            overview = prefixedOverview,
+            originalLanguage = originalLanguage,
+            originalTitle = originalTitle,
+            popularity = popularity,
+            releaseDate = releaseDate,
+            voteAverage = voteAverage,
+        )
     }
 }
 

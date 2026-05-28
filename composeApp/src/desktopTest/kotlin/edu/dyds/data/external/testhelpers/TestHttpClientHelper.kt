@@ -13,7 +13,19 @@ import io.ktor.http.headersOf
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
+/**
+ * Provides reusable test utilities for mocking HTTP clients in tests.
+ * Centralizes MockEngine and JSON configuration to reduce duplication across test implementations.
+ */
 object TestHttpClientHelper {
+    /**
+     * Creates an HttpClient with a MockEngine for testing.
+     * Automatically configures JSON serialization with ignoreUnknownKeys to handle
+     * API responses that may have extra fields not defined in the DTO.
+     *
+     * @param handler The lambda that handles mock requests and returns mock responses.
+     * @return An HttpClient configured with MockEngine and ready for testing.
+     */
     fun testHttpClient(
         handler: suspend MockRequestHandleScope.(request: HttpRequestData) -> HttpResponseData,
     ): HttpClient {
@@ -24,6 +36,9 @@ object TestHttpClientHelper {
         }
     }
 
+    /** Standard JSON response headers for mock responses. */
     val jsonHeaders = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString())
 }
+
+
 

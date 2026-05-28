@@ -8,9 +8,16 @@ import io.ktor.http.encodedPath
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+private const val TMDB_OVERVIEW_PREFIX = "TMDB: "
+private const val TMDB_POSTER_BASE_URL = "https://image.tmdb.org/t/p/w500"
+private const val TMDB_BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/w780"
+private const val TMDB_ENDPOINT_POPULAR = "/3/movie/popular"
+private const val TMDB_ENDPOINT_SEARCH = "/3/search/movie"
+private const val TMDB_PARAM_QUERY = "query"
+
 @Serializable
 data class TMDBSearchResult(
-	val results: List<TMDBMovie> = emptyList(),
+    val results: List<TMDBMovie> = emptyList(),
     @SerialName("status_code") val statusCode: Int? = null,
     @SerialName("status_message") val statusMessage: String? = null,
     val success: Boolean? = null,
@@ -30,12 +37,16 @@ data class TMDBMovie(
     @SerialName("vote_average") val voteAverage: Double = 0.0,
 )
 
+/**
+ * Converts TMDB DTO to domain Movie entity.
+ * Constructs poster and backdrop URLs using TMDB's image CDN.
+ */
 fun TMDBMovie.toDomainMovie(): Movie {
     return Movie(
         id = id,
         title = title,
-        poster = posterPath?.let { "https://image.tmdb.org/t/p/w500$it" } ?: "",
-        backdrop = backdropPath?.let { "https://image.tmdb.org/t/p/w780$it" },
+        poster = posterPath?.let { "$TMDB_POSTER_BASE_URL$it" } ?: "",
+        backdrop = backdropPath?.let { "$TMDB_BACKDROP_BASE_URL$it" },
         overview = overview,
         originalLanguage = originalLanguage,
         originalTitle = originalTitle,
@@ -47,50 +58,65 @@ fun TMDBMovie.toDomainMovie(): Movie {
 
 @Suppress("unused")
 class TMDBMoviesExternalSourceImpl(
-	private val httpClient: HttpClient,
+    private val httpClient: HttpClient,
 ) : TMDBMoviesExternalSource {
-	override suspend fun getPopularMovies(): List<Movie> {
-		val response: TMDBSearchResult = httpClient.get {
-			url { encodedPath = "/3/movie/popular" }
-		}.body()
+
+    /**
+     * Fetches a list of popular movies from TMDB.
+     * Throws IllegalStateException if the API response contains an error status.
+     */
+    override suspend fun getPopularMovies(): List<Movie> {
+        val response: TMDBSearchResult = httpClient.get {
+            url { encodedPath = TMDB_ENDPOINT_POPULAR }
+        }.body()
+
+        validateResponse(response)
+        return response.results.map { it.toDomainMovie() }
+    }
+
+    /**
+     * Searches for a movie by title via TMDB API.
+     * Returns the first result if found, or null if not found or request fails.
+     * Adds a source prefix to the overview for clarity.
+     */
+    override suspend fun searchMovieByTitle(title: String): Movie? {
+        return runCatching {
+            val response: TMDBSearchResult = httpClient.get {
+                url {
+                    encodedPath = TMDB_ENDPOINT_SEARCH
+                    parameters.append(TMDB_PARAM_QUERY, title)
+                }
+            }.body()
+
+            validateResponse(response)
+            response.results.firstOrNull()?.toDomainMovie()?.addSourcePrefix()
+        }.getOrNull()
+    }
+
+    private fun validateResponse(response: TMDBSearchResult) {
         if (response.statusCode != null) {
             throw IllegalStateException(
                 response.statusMessage ?: "TMDB request failed with status_code=${response.statusCode}"
             )
         }
-		return response.results.map { it.toDomainMovie() }
-	}
+    }
 
-	override suspend fun searchMovieByTitle(title: String): Movie? {
-		return runCatching {
-			val tmdb = httpClient.get {
-				url {
-					encodedPath = "/3/search/movie"
-					parameters.append("query", title)
-				}
-			}.body<TMDBSearchResult>().let { response ->
-                if (response.statusCode != null) {
-                    throw IllegalStateException(
-                        response.statusMessage ?: "TMDB request failed with status_code=${response.statusCode}"
-                    )
-                }
-                response.results.firstOrNull()?.toDomainMovie()
-            }
-			if (tmdb == null) return@runCatching null
-			// Prefix overview to indicate source when queried by title
-			Movie(
-				id = tmdb.id,
-				title = tmdb.title,
-				poster = tmdb.poster,
-				backdrop = tmdb.backdrop,
-				overview = if (tmdb.overview.isBlank()) tmdb.overview else "TMDB: ${tmdb.overview}",
-				originalLanguage = tmdb.originalLanguage,
-				originalTitle = tmdb.originalTitle,
-				popularity = tmdb.popularity,
-				releaseDate = tmdb.releaseDate,
-				voteAverage = tmdb.voteAverage,
-			)
-		}.getOrNull()
-	}
+    /** Adds the TMDB source prefix to the overview for clarity. */
+    private fun Movie?.addSourcePrefix(): Movie? {
+        if (this == null) return null
+        val prefixedOverview = if (overview.isBlank()) overview else "$TMDB_OVERVIEW_PREFIX$overview"
+        return Movie(
+            id = id,
+            title = title,
+            poster = poster,
+            backdrop = backdrop,
+            overview = prefixedOverview,
+            originalLanguage = originalLanguage,
+            originalTitle = originalTitle,
+            popularity = popularity,
+            releaseDate = releaseDate,
+            voteAverage = voteAverage,
+        )
+    }
 }
 
