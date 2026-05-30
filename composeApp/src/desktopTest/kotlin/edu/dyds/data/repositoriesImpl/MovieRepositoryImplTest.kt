@@ -73,7 +73,7 @@ class MovieRepositoryImplTest {
         val cachedMovie = movie(id = 7, title = "Movie 7")
         val popularMoviesSource = FakePopularMoviesRemoteSource()
         val detailsSource = FakeMovieDetailsRemoteSource(
-            movieDetail = Movie(
+            movie = Movie(
                 id = 99,
                 title = "Movie 7",
                 poster = "poster-99",
@@ -85,7 +85,7 @@ class MovieRepositoryImplTest {
 
         val result = repository.getMovieDetailByTitle("Movie 7")
 
-        assertEquals(1, detailsSource.searchMovieByTitleInvocationCount)
+        assertEquals(1, detailsSource.invocationCount)
         assertEquals("Movie 7", detailsSource.requestedTitle)
         assertEquals(99, result?.id)
         assertEquals("Movie 7", result?.title)
@@ -96,7 +96,7 @@ class MovieRepositoryImplTest {
     @Test
     fun `when detail is missing from cache and remote has it, getMovieDetailByTitle keeps cache and returns mapped movie`() = runTest {
         val detailsSource = FakeMovieDetailsRemoteSource(
-            movieDetail = remoteMovie(
+            movie = remoteMovie(
                 id = 7,
                 title = "Movie 7",
                 posterPath = "/poster7.jpg",
@@ -115,7 +115,7 @@ class MovieRepositoryImplTest {
 
         val result = repository.getMovieDetailByTitle("Movie 7")
 
-        assertEquals(1, detailsSource.searchMovieByTitleInvocationCount)
+        assertEquals(1, detailsSource.invocationCount)
         assertEquals("Movie 7", detailsSource.requestedTitle)
         assertEquals(1, localDataSource.saveInvocationCount)
         assertEquals(2, localDataSource.savedMovies?.size)
@@ -136,7 +136,7 @@ class MovieRepositoryImplTest {
     @Test
     fun `when cache already has other movies, getMovieDetailByTitle appends fetched detail to cache`() = runTest {
         val detailsSource = FakeMovieDetailsRemoteSource(
-            movieDetail = remoteMovie(id = 5, title = "Movie 5")
+            movie = remoteMovie(id = 5, title = "Movie 5")
         )
         val popularMoviesSource = FakePopularMoviesRemoteSource()
         val localDataSource = FakeMovieLocalDataSource(cachedMovies = listOf(movie(id = 1)))
@@ -144,7 +144,7 @@ class MovieRepositoryImplTest {
 
         val result = repository.getMovieDetailByTitle("Movie 5")
 
-        assertEquals(1, detailsSource.searchMovieByTitleInvocationCount)
+        assertEquals(1, detailsSource.invocationCount)
         assertEquals("Movie 5", detailsSource.requestedTitle)
         assertEquals(1, localDataSource.saveInvocationCount)
         assertEquals(listOf(1, 5), localDataSource.savedMovies?.map { it.id })
@@ -153,14 +153,14 @@ class MovieRepositoryImplTest {
 
     @Test
     fun `when remote data source returns no detail, getMovieDetailByTitle returns null without updating cache`() = runTest {
-        val detailsSource = FakeMovieDetailsRemoteSource(movieDetail = null)
+        val detailsSource = FakeMovieDetailsRemoteSource(movie = null)
         val popularMoviesSource = FakePopularMoviesRemoteSource()
         val localDataSource = FakeMovieLocalDataSource()
         val repository = MovieRepositoryImpl(popularMoviesSource, detailsSource, localDataSource)
 
         val result = repository.getMovieDetailByTitle("Movie 99")
 
-        assertEquals(1, detailsSource.searchMovieByTitleInvocationCount)
+        assertEquals(1, detailsSource.invocationCount)
         assertEquals("Movie 99", detailsSource.requestedTitle)
         assertNull(result)
         assertEquals(0, localDataSource.saveInvocationCount)

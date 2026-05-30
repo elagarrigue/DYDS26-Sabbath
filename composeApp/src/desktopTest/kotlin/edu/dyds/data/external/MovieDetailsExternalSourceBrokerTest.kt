@@ -1,5 +1,7 @@
 package edu.dyds.data.external
 
+import edu.dyds.data.fakes.FakeMovieDetailsRemoteSource
+import edu.dyds.data.fakes.FakeThrowingMovieDetailsRemoteSource
 import edu.dyds.domain.entities.Movie
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -10,7 +12,7 @@ class MovieDetailsExternalSourceBrokerTest {
 
     @Test
     fun `when both sources return a movie, broker combines overview popularity and vote average`() = runTest {
-        val tmdbSource = FakeDetailsSource(
+        val tmdbSource = FakeMovieDetailsRemoteSource(
             movie = movie(
                 id = 1,
                 title = "Movie 1",
@@ -19,7 +21,7 @@ class MovieDetailsExternalSourceBrokerTest {
                 voteAverage = 7.0,
             )
         )
-        val omdbSource = FakeDetailsSource(
+        val omdbSource = FakeMovieDetailsRemoteSource(
             movie = movie(
                 id = 2,
                 title = "Movie 1",
@@ -45,8 +47,8 @@ class MovieDetailsExternalSourceBrokerTest {
 
     @Test
     fun `when only TMDB returns a movie, broker prefixes overview with TMDB`() = runTest {
-        val tmdbSource = FakeDetailsSource(movie = movie(id = 1, title = "Movie 1", overview = "TMDB overview"))
-        val omdbSource = FakeDetailsSource(movie = null)
+        val tmdbSource = FakeMovieDetailsRemoteSource(movie = movie(id = 1, title = "Movie 1", overview = "TMDB overview"))
+        val omdbSource = FakeMovieDetailsRemoteSource(movie = null)
         val broker = MovieDetailsExternalSourceBroker(tmdbSource, omdbSource)
 
         val result = broker.searchMovieByTitle("Movie 1")
@@ -58,8 +60,8 @@ class MovieDetailsExternalSourceBrokerTest {
 
     @Test
     fun `when only OMDB returns a movie, broker prefixes overview with OMDB`() = runTest {
-        val tmdbSource = FakeDetailsSource(movie = null)
-        val omdbSource = FakeDetailsSource(movie = movie(id = 2, title = "Movie 1", overview = "OMDB overview"))
+        val tmdbSource = FakeMovieDetailsRemoteSource(movie = null)
+        val omdbSource = FakeMovieDetailsRemoteSource(movie = movie(id = 2, title = "Movie 1", overview = "OMDB overview"))
         val broker = MovieDetailsExternalSourceBroker(tmdbSource, omdbSource)
 
         val result = broker.searchMovieByTitle("Movie 1")
@@ -71,8 +73,8 @@ class MovieDetailsExternalSourceBrokerTest {
 
     @Test
     fun `when neither source returns a movie, broker returns null`() = runTest {
-        val tmdbSource = FakeDetailsSource(movie = null)
-        val omdbSource = FakeDetailsSource(movie = null)
+        val tmdbSource = FakeMovieDetailsRemoteSource(movie = null)
+        val omdbSource = FakeMovieDetailsRemoteSource(movie = null)
         val broker = MovieDetailsExternalSourceBroker(tmdbSource, omdbSource)
 
         val result = broker.searchMovieByTitle("Movie 1")
@@ -84,8 +86,8 @@ class MovieDetailsExternalSourceBrokerTest {
 
     @Test
     fun `when TMDB fails but OMDB returns a movie, broker falls back to OMDB`() = runTest {
-        val tmdbSource = ThrowingDetailsSource()
-        val omdbSource = FakeDetailsSource(movie = movie(id = 2, title = "Movie 1", overview = "OMDB overview"))
+        val tmdbSource = FakeThrowingMovieDetailsRemoteSource()
+        val omdbSource = FakeMovieDetailsRemoteSource(movie = movie(id = 2, title = "Movie 1", overview = "OMDB overview"))
         val broker = MovieDetailsExternalSourceBroker(tmdbSource, omdbSource)
 
         val result = broker.searchMovieByTitle("Movie 1")
@@ -97,8 +99,8 @@ class MovieDetailsExternalSourceBrokerTest {
 
     @Test
     fun `when OMDB fails but TMDB returns a movie, broker falls back to TMDB`() = runTest {
-        val tmdbSource = FakeDetailsSource(movie = movie(id = 1, title = "Movie 1", overview = "TMDB overview"))
-        val omdbSource = ThrowingDetailsSource()
+        val tmdbSource = FakeMovieDetailsRemoteSource(movie = movie(id = 1, title = "Movie 1", overview = "TMDB overview"))
+        val omdbSource = FakeThrowingMovieDetailsRemoteSource()
         val broker = MovieDetailsExternalSourceBroker(tmdbSource, omdbSource)
 
         val result = broker.searchMovieByTitle("Movie 1")
@@ -127,27 +129,6 @@ class MovieDetailsExternalSourceBrokerTest {
         voteAverage = voteAverage,
     )
 
-    private class FakeDetailsSource(
-        private val movie: Movie?,
-    ) : MovieDetailsExternalSource {
-        var invocationCount: Int = 0
-        var requestedTitle: String? = null
-
-        override suspend fun searchMovieByTitle(title: String): Movie? {
-            invocationCount++
-            requestedTitle = title
-            return movie
-        }
-    }
-
-    private class ThrowingDetailsSource : MovieDetailsExternalSource {
-        var invocationCount: Int = 0
-
-        override suspend fun searchMovieByTitle(title: String): Movie? {
-            invocationCount++
-            error("boom: $title")
-        }
-    }
 }
 
 
