@@ -15,7 +15,7 @@ import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
-import edu.dyds.data.external.omdb.OMDBMoviesExternalSourceImpl
+import edu.dyds.data.external.omdb.OMDBMoviesExternalSource
 import edu.dyds.data.external.MovieDetailsExternalSourceBroker
 
 private const val TMDB_API_KEY = "d18da1b5da16397619c688b0263cd281"
@@ -53,7 +53,7 @@ object MoviesDependencyInjector {
         }
     }
 
-    private val omdbMoviesExternalSource = OMDBMoviesExternalSourceImpl(
+    private val omdbMoviesExternalSource = OMDBMoviesExternalSource(
         httpClient = omdbHttpClient,
         apiKey = OMDB_API_KEY,
     )

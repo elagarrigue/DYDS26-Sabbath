@@ -8,10 +8,10 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 
 class MovieRemoteDataSourceImplTest : AbstractExternalSourceTest() {
-    override fun createSource(httpClient: HttpClient): Any = OMDBMoviesExternalSourceImpl(httpClient, apiKey = "testkey")
+    override fun createSource(httpClient: HttpClient): Any = OMDBMoviesExternalSource(httpClient, apiKey = "testkey")
 
     override suspend fun callSearch(source: Any, title: String): Movie? {
-        val s = source as OMDBMoviesExternalSourceImpl
+        val s = source as OMDBMoviesExternalSource
         return s.searchMovieByTitle(title)
     }
 
