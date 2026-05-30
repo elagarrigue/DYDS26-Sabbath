@@ -3,7 +3,7 @@ package edu.dyds.di
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import edu.dyds.data.local.MovieLocalDataSourceImpl
-import edu.dyds.data.external.tmdb.TMDBMoviesExternalSourceImpl
+import edu.dyds.data.external.tmdb.TMDBMoviesExternalSource
 import edu.dyds.data.repositoriesImpl.MovieRepositoryImpl
 import edu.dyds.domain.usecases.GetMovieDetailUseCase
 import edu.dyds.domain.usecases.GetMovieDetailUseCaseImpl
@@ -42,7 +42,7 @@ object MoviesDependencyInjector {
             }
         }
 
-    private val tmdbMoviesExternalSource = TMDBMoviesExternalSourceImpl(tmdbHttpClient)
+    private val tmdbMoviesExternalSource = TMDBMoviesExternalSource(tmdbHttpClient)
 
     private val omdbHttpClient = HttpClient {
         install(ContentNegotiation) {

@@ -38,7 +38,7 @@ class MovieRemoteDataSourceImplTest {
                 headers = TestHttpClientHelper.jsonHeaders,
             )
         }
-        val dataSource = TMDBMoviesExternalSourceImpl(httpClient)
+        val dataSource = TMDBMoviesExternalSource(httpClient)
 
         val result = dataSource.getPopularMovies()
 
@@ -81,12 +81,12 @@ class MovieRemoteDataSourceImplTest {
                 status = HttpStatusCode.OK,
                 headers = TestHttpClientHelper.jsonHeaders,
             )
-        }
-        val dataSource = TMDBMoviesExternalSourceImpl(httpClient)
+         }
+         val dataSource = TMDBMoviesExternalSource(httpClient)
 
-        val result = dataSource.searchMovieByTitle("Movie 42")
+         val result = dataSource.searchMovieByTitle("Movie 42")
 
-        assertEquals("/3/search/movie", requestedPath)
+         assertEquals("/3/search/movie", requestedPath)
         assertEquals("Movie 42", requestedQuery)
         assertEquals("Movie 42", result?.title)
         assertEquals("https://image.tmdb.org/t/p/w500/poster42.jpg", result?.poster)
@@ -97,14 +97,14 @@ class MovieRemoteDataSourceImplTest {
 
     @Test
     fun `when the search request fails, searchMovieByTitle returns null`() = runTest {
-        val httpClient = TestHttpClientHelper.testHttpClient {
-            error("network failure")
-        }
-        val dataSource = TMDBMoviesExternalSourceImpl(httpClient)
+         val httpClient = TestHttpClientHelper.testHttpClient {
+             error("network failure")
+         }
+         val dataSource = TMDBMoviesExternalSource(httpClient)
 
-        val result = dataSource.searchMovieByTitle("Movie 42")
+         val result = dataSource.searchMovieByTitle("Movie 42")
 
-        assertNull(result)
+         assertNull(result)
     }
 }
 
