@@ -1,7 +1,6 @@
 package edu.dyds.data.repositoriesImpl
 
 import edu.dyds.data.local.MovieLocalDataSource
-import edu.dyds.data.external.tmdb.TMDBMoviesExternalSource
 import edu.dyds.data.external.MovieDetailsExternalSource
 import edu.dyds.data.external.PopularMoviesExternalSource
 import edu.dyds.domain.entities.Movie
@@ -12,16 +11,6 @@ class MovieRepositoryImpl(
     private val detailsSource: MovieDetailsExternalSource,
     private val movieLocalDataSource: MovieLocalDataSource,
 ) : MovieRepository {
-    @Suppress("unused")
-    constructor(
-        movieExternalDataSource: TMDBMoviesExternalSource,
-        movieLocalDataSource: MovieLocalDataSource,
-    ) : this(
-        popularMoviesSource = movieExternalDataSource as PopularMoviesExternalSource,
-        detailsSource = movieExternalDataSource as MovieDetailsExternalSource,
-        movieLocalDataSource = movieLocalDataSource,
-    )
-
     override suspend fun getMovies(): List<Movie> {
         val cached = movieLocalDataSource.getCachedMovies()
         if (cached.isNotEmpty()) {
@@ -37,7 +26,7 @@ class MovieRepositoryImpl(
                 title = it.title,
                 poster = it.poster,
                 backdrop = it.backdrop,
-                overview = if (it.overview.isBlank()) it.overview else "TMDB: ${it.overview}",
+                overview = it.overview,
                 originalLanguage = it.originalLanguage,
                 originalTitle = it.originalTitle,
                 popularity = it.popularity,

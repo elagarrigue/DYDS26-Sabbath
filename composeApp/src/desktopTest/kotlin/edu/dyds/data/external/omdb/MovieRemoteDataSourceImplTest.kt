@@ -15,8 +15,8 @@ class MovieRemoteDataSourceImplTest : AbstractExternalSourceTest() {
         return s.searchMovieByTitle(title)
     }
 
-    override val expectedPathForSearch: String? = "/"
-    override val expectedQueryKey: String? = "t"
+    override val expectedPathForSearch: String = "/"
+    override val expectedQueryKey: String = "t"
     override val expectedOverviewPrefix: String = ""
     override val posterMapping: PosterMapping = PosterMapping.Passthrough
 

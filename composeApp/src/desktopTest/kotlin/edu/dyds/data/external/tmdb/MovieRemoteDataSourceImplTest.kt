@@ -2,11 +2,8 @@ package edu.dyds.data.external.tmdb
 
 import edu.dyds.data.external.testhelpers.TestHttpClientHelper
 import io.ktor.client.engine.mock.respond
-import edu.dyds.data.external.tmdb.TMDBMoviesExternalSourceImpl
-import io.ktor.client.HttpClient
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.test.runTest
-import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
