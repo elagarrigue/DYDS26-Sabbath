@@ -8,7 +8,6 @@ import io.ktor.http.encodedPath
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-private const val TMDB_OVERVIEW_PREFIX = "TMDB: "
 private const val TMDB_POSTER_BASE_URL = "https://image.tmdb.org/t/p/w500"
 private const val TMDB_BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/w780"
 private const val TMDB_ENDPOINT_POPULAR = "/3/movie/popular"
@@ -89,7 +88,7 @@ class TMDBMoviesExternalSourceImpl(
             }.body()
 
             validateResponse(response)
-            response.results.firstOrNull()?.toDomainMovie()?.addSourcePrefix()
+            response.results.firstOrNull()?.toDomainMovie()
         }.getOrNull()
     }
 
@@ -101,22 +100,5 @@ class TMDBMoviesExternalSourceImpl(
         }
     }
 
-    /** Adds the TMDB source prefix to the overview for clarity. */
-    private fun Movie?.addSourcePrefix(): Movie? {
-        if (this == null) return null
-        val prefixedOverview = if (overview.isBlank()) overview else "$TMDB_OVERVIEW_PREFIX$overview"
-        return Movie(
-            id = id,
-            title = title,
-            poster = poster,
-            backdrop = backdrop,
-            overview = prefixedOverview,
-            originalLanguage = originalLanguage,
-            originalTitle = originalTitle,
-            popularity = popularity,
-            releaseDate = releaseDate,
-            voteAverage = voteAverage,
-        )
-    }
 }
 

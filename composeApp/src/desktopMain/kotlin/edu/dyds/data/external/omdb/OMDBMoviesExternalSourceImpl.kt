@@ -9,7 +9,6 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 private const val OMDB_API_BASE_URL = "https://www.omdbapi.com/"
-private const val OMDB_OVERVIEW_PREFIX = "OMDB: "
 private const val OMDB_NA_VALUE = "N/A"
 private const val OMDB_PARAM_API_KEY = "apikey"
 private const val OMDB_PARAM_TITLE = "t"
@@ -86,25 +85,9 @@ class OMDBMoviesExternalSourceImpl(
 
             if (omdb.title.isBlank()) return@runCatching null
 
-            omdb.toDomainMovie().addSourcePrefix()
+            omdb.toDomainMovie()
         }.getOrNull()
     }
 
-    /** Adds the OMDB source prefix to the overview for clarity. */
-    private fun Movie.addSourcePrefix(): Movie {
-        val prefixedOverview = if (overview.isBlank()) overview else "$OMDB_OVERVIEW_PREFIX$overview"
-        return Movie(
-            id = id,
-            title = title,
-            poster = poster,
-            backdrop = backdrop,
-            overview = prefixedOverview,
-            originalLanguage = originalLanguage,
-            originalTitle = originalTitle,
-            popularity = popularity,
-            releaseDate = releaseDate,
-            voteAverage = voteAverage,
-        )
-    }
 }
 

@@ -71,11 +71,7 @@ class MovieDetailsExternalSourceBroker(
     }
 
     private fun prefixOverview(source: String, overview: String): String {
-        val normalized = overview
-            .removePrefix("TMDB: ")
-            .removePrefix("OMDB: ")
-
-        return if (normalized.isBlank()) normalized else "$source: $normalized"
+        return if (overview.isBlank()) overview else "$source: $overview"
     }
 }
 

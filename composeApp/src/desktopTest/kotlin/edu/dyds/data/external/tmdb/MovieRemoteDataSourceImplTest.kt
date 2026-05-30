@@ -93,7 +93,7 @@ class MovieRemoteDataSourceImplTest {
         assertEquals("Movie 42", requestedQuery)
         assertEquals("Movie 42", result?.title)
         assertEquals("https://image.tmdb.org/t/p/w500/poster42.jpg", result?.poster)
-        assertEquals("TMDB: Overview 42", result?.overview)
+        assertEquals("Overview 42", result?.overview)
         assertEquals(42.0, result?.popularity)
         assertEquals(8.4, result?.voteAverage)
     }
@@ -109,8 +109,6 @@ class MovieRemoteDataSourceImplTest {
 
         assertNull(result)
     }
-
-    // Use TestHttpClientHelper for HttpClient(MockEngine) construction and jsonHeaders
 }
 
 
