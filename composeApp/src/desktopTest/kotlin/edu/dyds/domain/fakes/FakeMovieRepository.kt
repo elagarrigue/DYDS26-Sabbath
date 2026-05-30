@@ -8,18 +8,18 @@ class FakeMovieRepository(
     private val movieDetail: Movie? = null,
 ) : MovieRepository {
 
-    var requestedId: Int? = null
+    var requestedTitle: String? = null
     var getMoviesInvocationCount: Int = 0
-    var getMovieDetailInvocationCount: Int = 0
+    var getMovieDetailByTitleInvocationCount: Int = 0
 
     override suspend fun getMovies(): List<Movie> {
         getMoviesInvocationCount++
         return movies
     }
 
-    override suspend fun getMovieDetail(id: Int): Movie? {
-        getMovieDetailInvocationCount++
-        requestedId = id
+    override suspend fun getMovieDetailByTitle(title: String): Movie? {
+        getMovieDetailByTitleInvocationCount++
+        requestedTitle = title
         return movieDetail
     }
 }

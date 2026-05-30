@@ -58,7 +58,9 @@ fun HomeScreen(
 
                 when {
                     state.movies.isNotEmpty() -> MovieGrid(padding, state.movies, onGoodMovieClick)
-                    state.isLoading.not() -> NoResults { viewModel.getAllMovies() }
+                    state.isLoading.not() -> NoResults(
+                        message = state.errorMessage ?: "No Results"
+                    ) { viewModel.getAllMovies() }
                 }
             }
         }

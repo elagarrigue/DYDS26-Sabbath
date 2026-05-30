@@ -19,17 +19,17 @@ class DetailViewModelTest {
 
     @Test
     fun `when use case returns movie, getMovieDetail emits loading and loaded states`() = runTest {
-        val expectedMovie = movie(id = 7)
+        val expectedMovie = Movie(id = 7, title = "Movie 7", poster = "poster-7")
         val useCase = FakeGetMovieDetailUseCase(result = expectedMovie)
         val viewModel = DetailViewModel(useCase)
 
         viewModel.movieDetailStateFlow.test {
             assertEquals(DetailViewModel.MovieDetailUiState(), awaitItem())
 
-            viewModel.getMovieDetail(7)
+            viewModel.getMovieDetail("Movie 7")
 
             assertEquals(1, useCase.invocationCount)
-            assertEquals(7, useCase.requestedId)
+            assertEquals("Movie 7", useCase.requestedTitle)
             assertEquals(
                 DetailViewModel.MovieDetailUiState(isLoading = true),
                 awaitItem()
@@ -51,10 +51,10 @@ class DetailViewModelTest {
         viewModel.movieDetailStateFlow.test {
             assertEquals(DetailViewModel.MovieDetailUiState(), awaitItem())
 
-            viewModel.getMovieDetail(42)
+            viewModel.getMovieDetail("Movie 42")
 
             assertEquals(1, useCase.invocationCount)
-            assertEquals(42, useCase.requestedId)
+            assertEquals("Movie 42", useCase.requestedTitle)
             assertEquals(
                 DetailViewModel.MovieDetailUiState(isLoading = true),
                 awaitItem()
@@ -66,10 +66,4 @@ class DetailViewModelTest {
             cancelAndIgnoreRemainingEvents()
         }
     }
-
-    private fun movie(id: Int) = Movie(
-        id = id,
-        title = "Movie $id",
-        poster = "poster-$id",
-    )
 }

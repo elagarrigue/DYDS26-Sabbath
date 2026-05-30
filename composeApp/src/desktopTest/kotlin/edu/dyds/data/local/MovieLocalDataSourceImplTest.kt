@@ -46,20 +46,20 @@ class MovieLocalDataSourceImplTest {
     }
 
     @Test
-    fun `when requested id exists in cache, getCachedMovieDetail returns that movie`() = runTest {
+    fun `when requested title exists in cache, getCachedMovieDetail returns that movie`() = runTest {
         val expectedMovie = movie(id = 7)
         localDataSource.saveMovies(listOf(movie(id = 1), expectedMovie))
 
-        val result = localDataSource.getCachedMovieDetail(7)
+        val result = localDataSource.getCachedMovieDetail("Movie 7")
 
         assertEquals(expectedMovie, result)
     }
 
     @Test
-    fun `when requested id does not exist in cache, getCachedMovieDetail returns null`() = runTest {
+    fun `when requested title does not exist in cache, getCachedMovieDetail returns null`() = runTest {
         localDataSource.saveMovies(listOf(movie(id = 1)))
 
-        val result = localDataSource.getCachedMovieDetail(99)
+        val result = localDataSource.getCachedMovieDetail("Movie 99")
 
         assertNull(result)
     }
@@ -105,7 +105,7 @@ class MovieLocalDataSourceImplTest {
                 try {
                     repeat(20) {
                         runBlocking {
-                            lookupAllIds(localDataSource, movieCount)
+                            lookupAllTitles(localDataSource, movieCount)
                         }
                     }
                 } catch (e: Exception) {
@@ -131,7 +131,7 @@ class MovieLocalDataSourceImplTest {
         poster = "poster-$id",
     )
 
-    private suspend fun lookupAllIds(source: MovieLocalDataSource, count: Int) {
-        for (id in 1..count) source.getCachedMovieDetail(id)
+    private suspend fun lookupAllTitles(source: MovieLocalDataSource, count: Int) {
+        for (id in 1..count) source.getCachedMovieDetail("Movie $id")
     }
 }

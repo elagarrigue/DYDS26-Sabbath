@@ -2,8 +2,8 @@ package edu.dyds.di
 
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
-import edu.dyds.data.remote.MovieRemoteDataSourceImpl
 import edu.dyds.data.local.MovieLocalDataSourceImpl
+import edu.dyds.data.external.tmdb.TMDBMoviesExternalSource
 import edu.dyds.data.repositoriesImpl.MovieRepositoryImpl
 import edu.dyds.domain.usecases.GetMovieDetailUseCase
 import edu.dyds.domain.usecases.GetMovieDetailUseCaseImpl
@@ -15,8 +15,11 @@ import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
+import edu.dyds.data.external.omdb.OMDBMoviesExternalSource
+import edu.dyds.data.external.MovieDetailsExternalSourceBroker
 
-private const val API_KEY = "d18da1b5da16397619c688b0263cd281"
+private const val TMDB_API_KEY = "d18da1b5da16397619c688b0263cd281"
+private const val OMDB_API_KEY = "a96e7f78"
 
 object MoviesDependencyInjector {
 
@@ -31,17 +34,41 @@ object MoviesDependencyInjector {
                 url {
                     protocol = URLProtocol.HTTPS
                     host = "api.themoviedb.org"
-                    parameters.append("api_key", API_KEY)
+                    parameters.append("api_key", TMDB_API_KEY)
                 }
             }
             install(HttpTimeout) {
-                requestTimeoutMillis = 5000
+                requestTimeoutMillis = 15000
             }
         }
 
-    private val movieRemoteDataSource = MovieRemoteDataSourceImpl(tmdbHttpClient)
+    private val tmdbMoviesExternalSource = TMDBMoviesExternalSource(tmdbHttpClient)
+
+    private val omdbHttpClient = HttpClient {
+        install(ContentNegotiation) {
+            json(Json { ignoreUnknownKeys = true })
+        }
+        install(HttpTimeout) {
+            requestTimeoutMillis = 15000
+        }
+    }
+
+    private val omdbMoviesExternalSource = OMDBMoviesExternalSource(
+        httpClient = omdbHttpClient,
+        apiKey = OMDB_API_KEY,
+    )
+
+    private val movieDetailsBroker = MovieDetailsExternalSourceBroker(
+        tmdbSource = tmdbMoviesExternalSource,
+        omdbSource = omdbMoviesExternalSource,
+    )
+
     private val movieLocalDataSource = MovieLocalDataSourceImpl()
-    private val movieRepository = MovieRepositoryImpl(movieRemoteDataSource, movieLocalDataSource)
+    private val movieRepository = MovieRepositoryImpl(
+        popularMoviesSource = tmdbMoviesExternalSource,
+        detailsSource = movieDetailsBroker,
+        movieLocalDataSource = movieLocalDataSource
+    )
     private val getMoviesUseCase: GetMoviesUseCase = GetMoviesUseCaseImpl(movieRepository)
     private val getMovieDetailUseCase: GetMovieDetailUseCase = GetMovieDetailUseCaseImpl(movieRepository)
 
