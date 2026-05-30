@@ -38,7 +38,7 @@ class MovieDetailsExternalSourceBroker(
                 releaseDate = omdbResult.releaseDate,
                 voteAverage = omdbResult.voteAverage,
             )
-            else -> emptyMovie()
+            else -> null
         }
     }
 
@@ -67,14 +67,6 @@ class MovieDetailsExternalSourceBroker(
             popularity = popularity,
             releaseDate = releaseDate,
             voteAverage = voteAverage,
-        )
-    }
-
-    private fun emptyMovie(): Movie {
-        return Movie(
-            id = 0,
-            title = "",
-            poster = "",
         )
     }
 

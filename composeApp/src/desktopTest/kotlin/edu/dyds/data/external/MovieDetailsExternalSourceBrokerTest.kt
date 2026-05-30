@@ -4,6 +4,7 @@ import edu.dyds.domain.entities.Movie
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 class MovieDetailsExternalSourceBrokerTest {
 
@@ -69,7 +70,7 @@ class MovieDetailsExternalSourceBrokerTest {
     }
 
     @Test
-    fun `when neither source returns a movie, broker returns an empty movie`() = runTest {
+    fun `when neither source returns a movie, broker returns null`() = runTest {
         val tmdbSource = FakeDetailsSource(movie = null)
         val omdbSource = FakeDetailsSource(movie = null)
         val broker = MovieDetailsExternalSourceBroker(tmdbSource, omdbSource)
@@ -78,10 +79,7 @@ class MovieDetailsExternalSourceBrokerTest {
 
         assertEquals(1, tmdbSource.invocationCount)
         assertEquals(1, omdbSource.invocationCount)
-        assertEquals(0, result?.id)
-        assertEquals("", result?.title)
-        assertEquals("", result?.poster)
-        assertEquals("", result?.overview)
+        assertNull(result)
     }
 
     @Test
