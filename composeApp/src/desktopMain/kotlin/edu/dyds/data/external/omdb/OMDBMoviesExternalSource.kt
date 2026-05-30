@@ -70,8 +70,6 @@ class OMDBMoviesExternalSource(
 	 * Returns null if the title is not found or the request fails.
 	 */
 	override suspend fun searchMovieByTitle(title: String): Movie? {
-		// Use 't' parameter for exact title match (returns full movie details including Plot and Rating)
-		// Avoids 's' parameter which returns limited search results
 		return runCatching {
 			val omdb: OMDBMovie = httpClient.get(OMDB_API_BASE_URL) {
 				url {

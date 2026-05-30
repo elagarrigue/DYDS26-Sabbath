@@ -58,7 +58,6 @@ object MoviesDependencyInjector {
         apiKey = OMDB_API_KEY,
     )
 
-    // Broker that delegates to TMDB and OMDb and combines results when both are available
     private val movieDetailsBroker = MovieDetailsExternalSourceBroker(
         tmdbSource = tmdbMoviesExternalSource,
         omdbSource = omdbMoviesExternalSource,
